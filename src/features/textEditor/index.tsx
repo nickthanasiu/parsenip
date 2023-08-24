@@ -1,28 +1,30 @@
 import Editor from "@monaco-editor/react";
-import type { editor } from "monaco-editor";
-import { useRef } from "react";
+import { editor } from "monaco-editor";
+import { useRef, Dispatch, SetStateAction } from "react";
 
 type Editor = editor.IStandaloneCodeEditor;
 
-export default function TextEditor() {
+interface Props {
+    initialValue: string;
+    setEditorInput: Dispatch<SetStateAction<string>>;
+}
+
+export default function TextEditor({ initialValue, setEditorInput }: Props) {
     const editorRef = useRef<Editor>();
 
     function handleEditorMount(editor: Editor) {
         editorRef.current = editor;
     }
 
-    function getEditorValue() {
-        return editorRef.current?.getValue();
-    }
-
     function handleChange() {
-        console.log(getEditorValue());
+        setEditorInput(editorRef.current?.getValue() || '');
     }
 
     const options = {
         height: '100vh',
         width: '100%',
-        theme: "vs-dark",
+        theme: 'vs-dark',
+        value: initialValue,
         onMount: handleEditorMount,
         onChange: handleChange
     };
