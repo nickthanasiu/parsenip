@@ -1,16 +1,17 @@
 import { useState } from "react";
-import TokenCard from "./TokenCard";
-import { lex } from "../../interpreter/lexer";
-
-interface Props {
-    input: string;
-}
+import Tab from "./Tab";
+import TokensPanel from "./TokensPanel";
+import TempPanel from "./TempPanel";
 
 type TabName = 'tokens' | 'parser' | 'evaluate';
 type Tab = {
     name: TabName;
     displayName: string;
 };
+
+interface Props {
+    input: string;
+}
 
 export default function ResultsPanels({ input }: Props) {
     const [activeTab, setActiveTab] = useState<TabName>('tokens');
@@ -30,7 +31,7 @@ export default function ResultsPanels({ input }: Props) {
 
     const DisplayPanel = () => activeTab === 'tokens'
         ? <TokensPanel input={input} />
-        : <ParserPanel />
+        : <TempPanel />
 
     return (
         <div>
@@ -45,61 +46,6 @@ export default function ResultsPanels({ input }: Props) {
             </div>
 
             <DisplayPanel />
-        </div>
-    );
-}
-
-function Tab({ handleClick, displayName, active }: { handleClick: any; displayName: string; active: boolean; }) {
-
-    let tabStyles = {
-        width: '100px',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        cursor: 'pointer',
-    };
-
-    const activeStyles = {
-        borderBottom: active ? '3px solid #4666ff' : '',
-        color: active ? 'black' : 'gray',
-    };
-
-    if (active) {
-        tabStyles = {
-            ...tabStyles,
-            ...activeStyles
-        };
-    }
-
-    return (
-        <div onClick={handleClick} style={tabStyles}>
-            {displayName}
-        </div>
-    );
-}
-
-function TokensPanel({ input }: { input: string; }) {
-    const tokens = lex(input);
-
-    return (
-        <div style={{ 
-            backgroundColor: '#fff',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(6, 1fr)',
-            rowGap: '10px',
-            columnGap: '10px',
-            padding: '15px',
-            height: 'min-content'
-        }}>
-            {tokens.map(t => <TokenCard token={t} />)}
-        </div>
-    );
-}
-
-function ParserPanel() {
-    return (
-        <div style={{ paddingLeft: '10px'}}>
-            <h2>Under Construction...</h2>
         </div>
     );
 }
