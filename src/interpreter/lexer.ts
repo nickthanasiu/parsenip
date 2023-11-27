@@ -6,7 +6,6 @@ export interface Lexer {
   input: string;
 }
 
-
 export class Lexer implements Lexer {
 
   constructor(input: string) {
@@ -80,7 +79,7 @@ export class Lexer implements Lexer {
     }
 
     this.readChar(); // Set this.ch, and move cursor position to next char
-     return token;
+    return token;
   }
 
   readIdentifier() {
@@ -130,7 +129,7 @@ export class Lexer implements Lexer {
 }
 
 
-export const lex = (input: string) => {
+export function lex(input: string) {
   const l = new Lexer(input);
 
   const tokens: Token[] = [];
