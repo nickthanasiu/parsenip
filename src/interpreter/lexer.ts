@@ -107,10 +107,10 @@ export class Lexer implements Lexer {
 
   skipWhitespace() {
     const isWhitespace = (ch: string) =>
-      ch === " " 
-      || ch === "\n"
-      || ch === "\r"
-      || ch === "\t"
+      ch === " "  ||
+      ch === "\n" ||
+      ch === "\r" ||
+      ch === "\t"
     ;
 
     while (isWhitespace(this.ch)) {

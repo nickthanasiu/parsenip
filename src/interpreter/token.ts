@@ -22,6 +22,7 @@ export enum TokenType {
     // Keywords
     FUNCTION = "FUNCTION",
     LET = "LET",
+    RETURN = "RETURN",
   }
   
   export interface Token {
@@ -36,7 +37,8 @@ export enum TokenType {
   
   const keywords = new Map<string, TokenType>([
     ["fn", TokenType.FUNCTION],
-    ["let", TokenType.LET]
+    ["let", TokenType.LET],
+    ["return", TokenType.RETURN],
   ]);
   
   export function lookupIdentifer(text: string) {

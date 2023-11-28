@@ -24,7 +24,7 @@ export class Parser implements Parser {
     }
 
     public parseProgram() {
-        const program = new ast.Program();
+        const program = ast.program();
 
         while (!this.currTokenIs(TokenType.EOF)) {
             const statement = this.parseStatement();
@@ -45,6 +45,8 @@ export class Parser implements Parser {
         switch (this.currToken.type) {
             case TokenType.LET:
                 return this.parseLetStatement();
+            case TokenType.RETURN:
+                return this.parseReturnStatement();
             default:
                 return null;    
         }
@@ -54,7 +56,7 @@ export class Parser implements Parser {
         
         if (!this.expectPeek(TokenType.IDENT)) return null;
         
-        const name = ast.identifier(this.currToken, this.currToken.literal);
+        const name = ast.identifier(this.currToken.literal);
         
         if (!this.expectPeek(TokenType.ASSIGN)) return null;
         
@@ -63,7 +65,20 @@ export class Parser implements Parser {
             this.nextToken();
         }
         
-        return new ast.LetStatement(name);
+        return ast.letStatement(name);
+    }
+
+    private parseReturnStatement() {
+        const statement = ast.returnStatement();
+
+        this.nextToken();
+
+        // @TODO: We're going to skip parsing expressions for now
+        while (!this.currTokenIs(TokenType.SEMICOLON)) {
+            this.nextToken();
+        }
+
+        return statement;
     }
 
     private expectPeek(t: TokenType) {

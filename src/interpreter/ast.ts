@@ -2,30 +2,43 @@ import { Token, TokenType, newToken } from "./token";
 
 //type Node = Statement | Expression | Program;
 type Expression = Identifier;
-type Statement = LetStatement;
+type Statement = 
+    | LetStatement
+    | ReturnStatement;
 
 export interface LetStatement {
     token: Token;
     name: Identifier;
-    value: Expression;
+    value?: Expression;
 };
 
-export class LetStatement implements LetStatement {
-    constructor(name: Identifier) {
-        this.token = newToken(TokenType.LET, "let");
-        this.name = name;
-    }
+
+export function letStatement(name: Identifier): LetStatement {
+    return {
+        token: newToken(TokenType.LET, "let"),
+        name
+    };
 }
 
+export interface ReturnStatement {
+    token: Token;
+    //returnValue: Expression;
+}
+
+export function returnStatement() {
+    return {
+        token: newToken(TokenType.RETURN, "return"),
+    };
+}
 
 export interface Identifier {
     token: Token;
     value: string;
 };
 
-export function identifier(token: Token, value: string): Identifier {
+export function identifier(value: string): Identifier {
     return {
-        token,
+        token: newToken(TokenType.IDENT, value),
         value
     }
 }
@@ -34,8 +47,8 @@ export interface Program {
     statements: Statement[];
 }
 
-export class Program implements Program {
-    constructor(statements: Statement[] = []) {
-        this.statements = statements;
-    }
+export function program(statements: Statement[] = []) {
+    return {
+        statements
+    };
 }
