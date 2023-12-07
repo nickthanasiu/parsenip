@@ -70,13 +70,14 @@ export function prefixExpression(token: Token, right: Expression): PrefixExpress
 // Statements
 ////////////////
 
-type Statement = 
+export type Statement = 
     | LetStatement
     | ReturnStatement
     | ExpressionStatement
 ;
 
 export interface LetStatement {
+    type: "LetStatement";
     token: Token;
     name: Identifier;
     value?: Expression;
@@ -84,29 +85,34 @@ export interface LetStatement {
 
 export function letStatement(name: Identifier): LetStatement {
     return {
+        type: "LetStatement",
         token: newToken(TokenType.LET, "let"),
         name
     };
 }
 
 export interface ReturnStatement {
+    type: "ReturnStatement";
     token: Token;
     //returnValue: Expression;
 }
 
-export function returnStatement() {
+export function returnStatement(): ReturnStatement {
     return {
+        type: "ReturnStatement",
         token: newToken(TokenType.RETURN, "return"),
     };
 }
 
 export interface ExpressionStatement {
+    type: "ExpressionStatement";
     token: Token;
     expression: Expression;
 }
 
 export function expressionStatement(token: Token, expression: Expression): ExpressionStatement {
     return {
+        type: "ExpressionStatement",
         token,
         expression
     }
@@ -117,11 +123,13 @@ export function expressionStatement(token: Token, expression: Expression): Expre
 ////////////////
 
 export interface Program {
-    statements: Statement[];
+    type: "Program";
+    body: Statement[];
 }
 
-export function program(statements: Statement[] = []) {
+export function program(statements: Statement[] = []): Program {
     return {
-        statements
+        type: "Program",
+        body: statements
     };
 }

@@ -4,6 +4,7 @@ import TokensPanel from "./TokensPanel";
 import ParserPanel from "./ParserPanel";
 import TempPanel from "./TempPanel";
 
+
 type TabName = 'tokens' | 'parser' | 'evaluate';
 type Tab = {
     name: TabName;
@@ -14,13 +15,13 @@ interface Props {
     input: string;
 }
 
-export default function ResultsPanels({ input }: Props) {
+export default function ResultsPanels(props: Props) {
     const [activeTab, setActiveTab] = useState<TabName>('tokens');
 
     const tabs: Tab[] = [
         { name: 'tokens', displayName: 'Tokens' },
         { name: 'parser', displayName: 'Parser' },
-        //{ name: 'evaluate', displayName: 'Run Code'}
+        { name: 'evaluate', displayName: 'Run Code'}
     ];
 
     const tabsStyles = {
@@ -30,15 +31,21 @@ export default function ResultsPanels({ input }: Props) {
         paddingLeft: '5px',
     };
 
-    const DisplayPanel = () => {
+    function DisplayPanel(props: Props) {
+        let DisplayPanel;
+    
         switch (activeTab) {
             case 'tokens':
-                return <TokensPanel input={input} />;
+                DisplayPanel = TokensPanel;
+                break;
             case 'parser':
-                return <ParserPanel input={input} />;
+                DisplayPanel = ParserPanel;
+                break;
             default:
-                return <TempPanel />;
+                DisplayPanel = TempPanel;
         }
+
+        return <DisplayPanel {...props} />
     };
 
     return (
@@ -53,7 +60,7 @@ export default function ResultsPanels({ input }: Props) {
                 )}
             </div>
 
-            <DisplayPanel />
+            <DisplayPanel {...props} />
         </div>
     );
 }

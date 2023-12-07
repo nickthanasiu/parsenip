@@ -1,22 +1,28 @@
+import { useMemo } from "react";
 import { parse } from "../../interpreter/parser";
+import Expander from "../../components/Expander";
+import ASTNode from "./ASTNode";
 
 export default function ParserPanel({ input }: { input: string; }) {
-    const program = parse(input);
+    const program = useMemo(() => parse(input), [input]);
+
+    const styles = {
+        paddingLeft: '25px',
+    };
 
     return (
-        <div style={{ 
-            backgroundColor: '#fff',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(6, 1fr)',
-            rowGap: '10px',
-            columnGap: '10px',
-            padding: '15px',
-            height: 'min-content'
-        }}>
-            {program.statements.map(statement => {
-                console.log('Statement :: ', statement);
-                return <div>Statement: </div>
-            })}
+        <div style={styles}>
+            {program.body.map(statement => 
+                    <div>
+                        <Expander title={statement.type}>
+                            <ASTNode node={statement} />
+                        </Expander>
+                    </div>
+                )}
         </div>
     );
 }
+
+
+
+

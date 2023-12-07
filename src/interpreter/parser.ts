@@ -53,7 +53,7 @@ export class Parser implements Parser {
             
             // If statement is not null, add it to program.statements
             if (statement) {
-                program.statements.push(statement);
+                program.body.push(statement);
             }
 
             this.nextToken();
