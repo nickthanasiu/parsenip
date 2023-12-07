@@ -1,13 +1,14 @@
 import { Lexer } from "./lexer";
 import { Parser } from "./parser";
 import * as ast from "./ast";
+import { TokenType, newToken } from "./token";
 
 test('Parse let statements', () => {
 
     const input = `
         let x = 5;
         let y = 10;
-                    
+
         let foobar = 838383;
     `;
 
@@ -17,13 +18,9 @@ test('Parse let statements', () => {
         ast.letStatement(ast.identifier("foobar")),
     ]);
 
-    const l = new Lexer(input);
-    const p = new Parser(l);
+    const actual = parse(input);
 
-    const program = p.parseProgram();
-    checkParserErrors(p);
-
-    expect(program).toStrictEqual(expected);
+    expect(actual).toStrictEqual(expected);
 });
 
 function checkParserErrors({ errors }: Parser) {
@@ -52,11 +49,75 @@ test('Parse return statements', () => {
         ast.returnStatement(),
     ]);
 
-    const l = new Lexer(input);
-    const p = new Parser(l);
+    const actual = parse(input);
 
-    const program = p.parseProgram();
-    checkParserErrors(p);
-
-    expect(program).toStrictEqual(expected);
+    expect(actual).toStrictEqual(expected);
 });
+
+test('Parse integer literals', () => {
+    const expected = ast.program([
+        ast.expressionStatement(newToken(TokenType.INT, "5"), ast.integerLiteral(5))
+    ]);
+
+    const input = "5";
+    const actual = parse(input);
+
+    expect(actual).toStrictEqual(expected);
+});
+
+test('Parse prefix expressions', () => {
+    const expected = [
+        ast.program([
+            // !5;
+            ast.expressionStatement(
+                newToken(TokenType.BANG, "!"),
+                ast.prefixExpression(newToken(TokenType.BANG, "!"), ast.integerLiteral(5))
+            ),
+        ]),
+        ast.program([
+            ast.expressionStatement(
+                newToken(TokenType.MINUS, "-"),
+                ast.prefixExpression(newToken(TokenType.MINUS, "-"), ast.integerLiteral(15))
+            )
+        ]),
+
+        /*
+        ast.program([
+            ast.expressionStatement(
+                newToken(TokenType.BANG, "!"),
+                ast.prefixExpression(newToken(TokenType.BANG, "!"), ast.booleanLiteral(true))
+            )
+        ]),
+        ast.program([
+            ast.expressionStatement(
+                newToken(TokenType.BANG, "!"),
+                ast.prefixExpression(newToken(TokenType.BANG, "!"), ast.booleanLiteral(false))
+            )
+        ]),
+        */
+    ];
+
+
+    const inputs = [
+        "!5;",
+        "-15;",
+        //"!true",
+        //"!false",
+    ];
+
+    const actual = inputs.map(parse);
+
+    console.log('ACTUAL ', actual);
+
+    expect(actual).toStrictEqual(expected);
+});
+
+
+// Helper for parser tests
+function parse(input: string) {
+    const lexer = new Lexer(input);
+    const parser = new Parser(lexer);
+    const program = parser.parseProgram();
+    checkParserErrors(parser);
+    return program;
+}

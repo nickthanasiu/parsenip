@@ -39,6 +39,12 @@ export class Lexer implements Lexer {
       case "+":
         token = newToken(TokenType.PLUS, "+");
         break;
+      case "-":
+        token = newToken(TokenType.MINUS, "-")
+        break;
+      case "!":
+        token = newToken(TokenType.BANG, "!");
+        break;
       case ",":
         token = newToken(TokenType.COMMA, ",");
         break;
@@ -74,6 +80,7 @@ export class Lexer implements Lexer {
         }
         // or ILLEGAL, 
         else {
+          console.log('DO NOT KNOW WHAT TO DO WITH THIS')
           token = newToken(TokenType.ILLEGAL, this.ch);
         }
     }
