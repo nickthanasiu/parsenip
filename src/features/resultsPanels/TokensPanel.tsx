@@ -10,9 +10,9 @@ export default function TokensPanel({ input }: { input: string; }) {
             display: 'grid',
             gridTemplateColumns: 'repeat(6, 1fr)',
             rowGap: '10px',
-            columnGap: '10px',
+            //columnGap: '10px',
             padding: '15px',
-            height: 'min-content'
+            height: 'min-content',
         }}>
             {tokens.map(t => <TokenCard token={t} />)}
         </div>

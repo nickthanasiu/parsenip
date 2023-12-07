@@ -1,7 +1,9 @@
 import { useState } from "react";
 import Tab from "./Tab";
 import TokensPanel from "./TokensPanel";
+import ParserPanel from "./ParserPanel";
 import TempPanel from "./TempPanel";
+
 
 type TabName = 'tokens' | 'parser' | 'evaluate';
 type Tab = {
@@ -13,7 +15,7 @@ interface Props {
     input: string;
 }
 
-export default function ResultsPanels({ input }: Props) {
+export default function ResultsPanels(props: Props) {
     const [activeTab, setActiveTab] = useState<TabName>('tokens');
 
     const tabs: Tab[] = [
@@ -29,9 +31,22 @@ export default function ResultsPanels({ input }: Props) {
         paddingLeft: '5px',
     };
 
-    const DisplayPanel = () => activeTab === 'tokens'
-        ? <TokensPanel input={input} />
-        : <TempPanel />
+    function DisplayPanel(props: Props) {
+        let DisplayPanel;
+    
+        switch (activeTab) {
+            case 'tokens':
+                DisplayPanel = TokensPanel;
+                break;
+            case 'parser':
+                DisplayPanel = ParserPanel;
+                break;
+            default:
+                DisplayPanel = TempPanel;
+        }
+
+        return <DisplayPanel {...props} />
+    };
 
     return (
         <div>
@@ -45,7 +60,7 @@ export default function ResultsPanels({ input }: Props) {
                 )}
             </div>
 
-            <DisplayPanel />
+            <DisplayPanel {...props} />
         </div>
     );
 }

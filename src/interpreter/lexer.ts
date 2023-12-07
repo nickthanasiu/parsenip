@@ -6,7 +6,6 @@ export interface Lexer {
   input: string;
 }
 
-
 export class Lexer implements Lexer {
 
   constructor(input: string) {
@@ -39,6 +38,12 @@ export class Lexer implements Lexer {
         break;
       case "+":
         token = newToken(TokenType.PLUS, "+");
+        break;
+      case "-":
+        token = newToken(TokenType.MINUS, "-")
+        break;
+      case "!":
+        token = newToken(TokenType.BANG, "!");
         break;
       case ",":
         token = newToken(TokenType.COMMA, ",");
@@ -75,12 +80,13 @@ export class Lexer implements Lexer {
         }
         // or ILLEGAL, 
         else {
+          console.log('DO NOT KNOW WHAT TO DO WITH THIS')
           token = newToken(TokenType.ILLEGAL, this.ch);
         }
     }
 
     this.readChar(); // Set this.ch, and move cursor position to next char
-     return token;
+    return token;
   }
 
   readIdentifier() {
@@ -108,10 +114,10 @@ export class Lexer implements Lexer {
 
   skipWhitespace() {
     const isWhitespace = (ch: string) =>
-      ch === " " 
-      || ch === "\n"
-      || ch === "\r"
-      || ch === "\t"
+      ch === " "  ||
+      ch === "\n" ||
+      ch === "\r" ||
+      ch === "\t"
     ;
 
     while (isWhitespace(this.ch)) {
@@ -130,7 +136,7 @@ export class Lexer implements Lexer {
 }
 
 
-export const lex = (input: string) => {
+export function lex(input: string) {
   const l = new Lexer(input);
 
   const tokens: Token[] = [];

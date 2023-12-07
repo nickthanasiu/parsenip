@@ -9,6 +9,8 @@ export enum TokenType {
     // Operators
     ASSIGN = "=",
     PLUS = "+",
+    MINUS = "-",
+    BANG = "!",
   
     // Delimiters
     COMMA = ",",
@@ -20,8 +22,12 @@ export enum TokenType {
     RBRACE = "}",
   
     // Keywords
-    FUNCTION = "FUNCTION",
-    LET = "LET",
+    FUNCTION = "fn",
+    LET = "let",
+    RETURN = "return",
+
+    TRUE = "true",
+    FALSE = "false",
   }
   
   export interface Token {
@@ -33,10 +39,12 @@ export enum TokenType {
     return { type, literal: text };
   }
   
-  
   const keywords = new Map<string, TokenType>([
     ["fn", TokenType.FUNCTION],
-    ["let", TokenType.LET]
+    ["let", TokenType.LET],
+    ["return", TokenType.RETURN],
+    ["true", TokenType.TRUE],
+    ["false", TokenType.FALSE],
   ]);
   
   export function lookupIdentifer(text: string) {
