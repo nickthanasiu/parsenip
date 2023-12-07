@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import SplitScreen from './components/SplitScreen';
 import TextEditor from './features/textEditor';
-import ResultsPanel from './features/resultsPanel';
+import ResultsPanels from './features/resultsPanels';
 import './App.css';
 
 export default function App() {
@@ -12,7 +12,7 @@ export default function App() {
     <div className="app">
       <SplitScreen>
         <TextEditor initialValue={editorInput} setEditorInput={setEditorInput} />
-        <ResultsPanel input={editorInput} />
+        <ResultsPanels input={editorInput} />
       </SplitScreen>
     </div>
   );

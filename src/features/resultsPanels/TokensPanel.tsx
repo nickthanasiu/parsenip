@@ -1,18 +1,12 @@
 import TokenCard from "./TokenCard";
 import { lex } from "../../interpreter/lexer";
 
-interface Props {
-    input: string;
-}
-
-export default function ResultsPanel({ input }: Props) {
+export default function TokensPanel({ input }: { input: string; }) {
     const tokens = lex(input);
-
-    console.log(tokens);
 
     return (
         <div style={{ 
-            backgroundColor: 'black',
+            backgroundColor: '#fff',
             display: 'grid',
             gridTemplateColumns: 'repeat(6, 1fr)',
             rowGap: '10px',
@@ -20,7 +14,7 @@ export default function ResultsPanel({ input }: Props) {
             padding: '15px',
             height: 'min-content'
         }}>
-          {tokens.map(t => <TokenCard token={t} />)}
+            {tokens.map(t => <TokenCard token={t} />)}
         </div>
     );
 }
