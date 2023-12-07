@@ -19,7 +19,7 @@ export default function Expander({ title, defaultExpanded = false, children }: P
     return (
         <div style={{ paddingLeft: '10px' }}>
             <span style={{ color: indicator.color }}>{indicator.symbol} </span>
-            <span onClick={() => setExpanded(!expanded)}>
+            <span style={{ color: colors.blue }} onClick={() => setExpanded(!expanded)}>
                 {title}
             </span>
             {expanded && children}
