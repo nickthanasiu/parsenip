@@ -10,7 +10,13 @@ export enum TokenType {
     ASSIGN = "=",
     PLUS = "+",
     MINUS = "-",
+    ASTERISK = "*",
+    SLASH = "/",
     BANG = "!",
+    EQ = "==",
+    NOT_EQ = "!=",
+    LT = "<",
+    GT = ">",
   
     // Delimiters
     COMMA = ",",
@@ -50,6 +56,4 @@ export enum TokenType {
   export function lookupIdentifer(text: string) {
     const type = keywords.get(text) || TokenType.IDENT;
     return newToken(type, text);
-  
-  
   }

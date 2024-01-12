@@ -42,8 +42,26 @@ export class Lexer implements Lexer {
       case "-":
         token = newToken(TokenType.MINUS, "-")
         break;
+      case "*":
+        token = newToken(TokenType.ASTERISK, "*");
+        break;
+      case "/":
+        token = newToken(TokenType.SLASH, "/");
+        break;
       case "!":
         token = newToken(TokenType.BANG, "!");
+        break;
+      case "==":
+        token = newToken(TokenType.EQ, "==");
+        break;
+      case "!=":
+        token = newToken(TokenType.NOT_EQ, "!=");
+        break;
+      case "<":
+        token = newToken(TokenType.LT, "<");
+        break;
+      case ">":
+        token = newToken(TokenType.GT, ">");
         break;
       case ",":
         token = newToken(TokenType.COMMA, ",");
@@ -80,7 +98,7 @@ export class Lexer implements Lexer {
         }
         // or ILLEGAL, 
         else {
-          console.log('DO NOT KNOW WHAT TO DO WITH THIS')
+          console.error('Lexer does not recognize the following character ', this.ch);
           token = newToken(TokenType.ILLEGAL, this.ch);
         }
     }
@@ -141,11 +159,11 @@ export function lex(input: string) {
 
   const tokens: Token[] = [];
 
-  let token = l.nextToken();
+  let t = l.nextToken();
 
-  while (token.type !== TokenType.EOF) {
-    tokens.push(token);
-    token = l.nextToken();
+  while (t.type !== TokenType.EOF) {
+    tokens.push(t);
+    t = l.nextToken();
   }
 
   tokens.push(newToken(TokenType.EOF, '\0'));

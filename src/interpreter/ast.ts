@@ -1,4 +1,3 @@
-import { Token, TokenType, newToken } from "./token";
 
 export type Node = Expression | Statement | Program;
 
@@ -14,56 +13,66 @@ export type Expression =
 ;
 
 export interface Identifier {
-    token: Token;
+    type: "identifier",
     value: string;
 };
 
 export function identifier(value: string): Identifier {
     return {
-        token: newToken(TokenType.IDENT, value),
+        type: "identifier",
         value
     }
 }
 
 export interface IntegerLiteral {
-    token: Token;
+    type: "integerLiteral";
     value: number;
 }
 
 export function integerLiteral(value: number): IntegerLiteral {
     return {
-        token: newToken(TokenType.IDENT, value.toString()),
-        value: value
+        type: "integerLiteral",
+        value
     };
 }
 
 export interface BooleanLiteral {
-    token: Token;
+    type: 'booleanLiteral';
     value: boolean;
 }
 
 
-/*
 export function booleanLiteral(value: boolean): BooleanLiteral {
     return {
-        token: newToken(TokenType.ASSIGN)
+        type: "booleanLiteral",
         value
     }
 }
-*/
 
 export interface PrefixExpression {
-    token: Token;
     operator: string;
     right: Expression;
 }
 
-export function prefixExpression(token: Token, right: Expression): PrefixExpression {
+export function prefixExpression(operator: string, right: Expression): PrefixExpression {
     return {
-        token,
-        operator: token.literal,
+        operator,
         right
     }
+}
+
+interface InfixExpression {
+    left: Expression;
+    operator: string;
+    right: Expression;
+}
+
+export function infixExpression(left: Expression, operator: string, right: Expression): InfixExpression {
+    return {
+        left,
+        operator,
+        right
+    };
 }
 
 ////////////////
@@ -77,43 +86,37 @@ export type Statement =
 ;
 
 export interface LetStatement {
-    type: "LetStatement";
-    token: Token;
+    type: "letStatement";
     name: Identifier;
-    value?: Expression;
+    value?: Expression; // Optional because we're skipping parsing expressions for now
 };
 
 export function letStatement(name: Identifier): LetStatement {
     return {
-        type: "LetStatement",
-        token: newToken(TokenType.LET, "let"),
+        type: "letStatement",
         name
     };
 }
 
 export interface ReturnStatement {
-    type: "ReturnStatement";
-    token: Token;
+    type: "returnStatement";
     //returnValue: Expression;
 }
 
 export function returnStatement(): ReturnStatement {
     return {
-        type: "ReturnStatement",
-        token: newToken(TokenType.RETURN, "return"),
+        type: "returnStatement",
     };
 }
 
 export interface ExpressionStatement {
-    type: "ExpressionStatement";
-    token: Token;
+    type: "expressionStatement";
     expression: Expression;
 }
 
-export function expressionStatement(token: Token, expression: Expression): ExpressionStatement {
+export function expressionStatement(expression: Expression): ExpressionStatement {
     return {
-        type: "ExpressionStatement",
-        token,
+        type: "expressionStatement",
         expression
     }
 }
@@ -123,13 +126,13 @@ export function expressionStatement(token: Token, expression: Expression): Expre
 ////////////////
 
 export interface Program {
-    type: "Program";
+    type: "program";
     body: Statement[];
 }
 
 export function program(statements: Statement[] = []): Program {
     return {
-        type: "Program",
+        type: "program",
         body: statements
     };
 }
