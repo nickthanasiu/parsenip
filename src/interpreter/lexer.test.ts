@@ -41,6 +41,9 @@ test(`nextToken works`, () => {
     } else {
       return false;
     }
+
+    10 == 10;
+    10 != 9;
   `;
 
   
@@ -99,14 +102,6 @@ test(`nextToken works`, () => {
     { type: TokenType.INT, literal: "5" },
     { type: TokenType.SEMICOLON, literal: ";" },
 
-    /*
-    if (5 < 10) {
-      return true;
-    } else {
-      return false;
-    }
-    */
-
     { type: TokenType.IF, literal: "if" },
     { type: TokenType.LPAREN, literal: "(" },
     { type: TokenType.INT, literal: "5" },
@@ -124,6 +119,16 @@ test(`nextToken works`, () => {
     { type: TokenType.FALSE, literal: "false" },
     { type: TokenType.SEMICOLON, literal: ";" },
     { type: TokenType.RBRACE, literal: "}" },
+
+    { type: TokenType.INT, literal: "10" },
+    { type: TokenType.EQ, literal: "==" },
+    { type: TokenType.INT, literal: "10" },
+    { type: TokenType.SEMICOLON, literal: ";" },
+
+    { type: TokenType.INT, literal: "10" },
+    { type: TokenType.NOT_EQ, literal: "!=" },
+    { type: TokenType.INT, literal: "9" },
+    { type: TokenType.SEMICOLON, literal: ";" },
 
     { type: TokenType.EOF, literal: "\0" },
   ];

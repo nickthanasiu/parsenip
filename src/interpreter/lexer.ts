@@ -27,6 +27,14 @@ export class Lexer implements Lexer {
     this.position += 1;
   }
 
+  peekChar() {
+    if (this.position >= this.input.length) {
+      return "\0";
+    } else {
+      return this.input[this.position];
+    }
+  }
+
   public nextToken() {
     this.skipWhitespace();
 
@@ -34,7 +42,12 @@ export class Lexer implements Lexer {
 
     switch (this.ch) {
       case "=":
-        token = newToken(TokenType.ASSIGN, "=");
+        if (this.peekChar() === "=") {
+          this.readChar();
+          token = newToken(TokenType.EQ, "==");
+        } else {
+          token = newToken(TokenType.ASSIGN, "=");
+        }
         break;
       case "+":
         token = newToken(TokenType.PLUS, "+");
@@ -49,13 +62,12 @@ export class Lexer implements Lexer {
         token = newToken(TokenType.SLASH, "/");
         break;
       case "!":
-        token = newToken(TokenType.BANG, "!");
-        break;
-      case "==":
-        token = newToken(TokenType.EQ, "==");
-        break;
-      case "!=":
-        token = newToken(TokenType.NOT_EQ, "!=");
+        if (this.peekChar() === "=") {
+          this.readChar();
+          token = newToken(TokenType.NOT_EQ, "!=");
+        } else {
+          token = newToken(TokenType.BANG, "!");
+        }
         break;
       case "<":
         token = newToken(TokenType.LT, "<");
