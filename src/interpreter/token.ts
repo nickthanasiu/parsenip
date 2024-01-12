@@ -31,6 +31,8 @@ export enum TokenType {
     FUNCTION = "fn",
     LET = "let",
     RETURN = "return",
+    IF = "if",
+    ELSE = "else",
 
     TRUE = "true",
     FALSE = "false",
@@ -49,6 +51,8 @@ export enum TokenType {
     ["fn", TokenType.FUNCTION],
     ["let", TokenType.LET],
     ["return", TokenType.RETURN],
+    ["if", TokenType.IF],
+    ["else", TokenType.ELSE],
     ["true", TokenType.TRUE],
     ["false", TokenType.FALSE],
   ]);
