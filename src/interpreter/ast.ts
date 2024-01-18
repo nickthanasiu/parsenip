@@ -80,8 +80,8 @@ export function infixExpression(left: Expression, operator: string, right: Expre
 // Statements
 ////////////////
 
-export type Statement = 
-    | LetStatement
+export type Statement =
+    | VariableDeclarationStatement
     | ReturnStatement
     | ExpressionStatement
 ;
@@ -97,6 +97,22 @@ export function letStatement(name: Identifier): LetStatement {
         type: "letStatement",
         name
     };
+}
+
+export interface VariableDeclarationStatement {
+    type: "variableDeclaration";
+    constant: boolean;
+    identifier: Identifier;
+    value?: Expression | null;
+}
+
+export function variableDeclaration(constant: boolean, identifier: Identifier, value?: Expression | null): VariableDeclarationStatement {
+    return {
+        type: "variableDeclaration",
+        constant,
+        identifier,
+        value
+    }
 }
 
 export interface ReturnStatement {

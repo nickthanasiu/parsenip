@@ -1,6 +1,6 @@
 import { Lexer } from "./lexer";
 import * as ast from "./ast";
-import { Token, TokenType } from "./token";
+import { Token, TokenType, tokenTypeToString } from "./token";
 
 enum Precedence {
     LOWEST = 0,
@@ -88,7 +88,8 @@ export class Parser implements Parser {
     private parseStatement() {
         switch (this.currToken.type) {
             case TokenType.LET:
-                return this.parseLetStatement();
+            case TokenType.CONST:
+                return this.parseVariableDeclaration();
             case TokenType.RETURN:
                 return this.parseReturnStatement();
             default:
@@ -96,6 +97,48 @@ export class Parser implements Parser {
         }
     }
 
+    // let IDENT;
+    // (let | const) IDENT = EXPRESSION;
+    private parseVariableDeclaration() {
+        const isConstant = this.currToken.type === TokenType.CONST;
+
+        if (!this.expectPeek(TokenType.IDENT)) {
+            const errorMsg = `Expected identifier name following ${isConstant ? 'const' : 'let'} keyword`;
+            this.errors.push(errorMsg);
+            return null;
+        }
+
+        const identifier = ast.identifier(this.currToken.literal);
+
+        if (this.expectPeek(TokenType.SEMICOLON)) {
+            if (isConstant) {
+                this.errors.push(`Must assign value to constant expression. No value provided`);
+                return null;
+            }
+
+            return ast.variableDeclaration(isConstant, identifier);
+        }
+
+        if (!this.expectPeek(TokenType.ASSIGN)) {
+            this.errors.push(`Expected assignment token following identifier in var declaration`);
+            return null;
+        }
+
+        this.nextToken();
+
+        const value = this.parseExpression(Precedence.LOWEST);
+
+        const declaration = ast.variableDeclaration(isConstant, identifier, value);
+
+        if (!this.expectPeek(TokenType.SEMICOLON)) {
+            this.errors.push(`Variable declaration statement must end with semicolon`);
+            return null;
+        }
+
+        return declaration;
+    }
+
+    /*
     private parseLetStatement() {
         
         if (!this.expectPeek(TokenType.IDENT)) return null; // expectPeek checks peek token and advances parser
@@ -111,6 +154,8 @@ export class Parser implements Parser {
         
         return ast.letStatement(name);
     }
+
+    */
 
     private parseReturnStatement() {
         const statement = ast.returnStatement();
@@ -141,7 +186,7 @@ export class Parser implements Parser {
         const prefixParseFn = this.prefixParseFns.get(this.currToken.type);
 
         if (!prefixParseFn) {
-            const errorMsg = `No prefix parse function found for ${this.currToken.type}`;
+            const errorMsg = `No prefix parse function found for ${tokenTypeToString(this.currToken.type)}`;
             this.errors.push(errorMsg);
             return null;
         }
@@ -213,7 +258,7 @@ export class Parser implements Parser {
             this.nextToken();
             return true;
         } else {
-            this.peekError(t);
+            //this.peekError(t);
             return false;
         }
     }
@@ -226,10 +271,13 @@ export class Parser implements Parser {
         return this.peekToken.type === t;
     }
 
+    /*
     private peekError(t: TokenType) {
-        const errorMsg = `Expected next token to be ${t}, but got ${this.peekToken.type} instead`;
+        const errorMsg = `Expected next token to be ${tokenTypeToString(t)}, but got ${tokenTypeToString(this.peekToken.type)} instead`;
         this.errors.push(errorMsg);
     }
+    */
+
 
     private peekPrecedence() {
         return precedences.get(this.peekToken.type) || Precedence.LOWEST;

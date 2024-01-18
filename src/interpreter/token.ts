@@ -30,11 +30,22 @@ export enum TokenType {
     // Keywords
     FUNCTION,
     LET,
+    CONST,
     RETURN,
     IF,
     ELSE,
     TRUE,
     FALSE,
+  }
+
+  export function tokenTypeToString(tt: TokenType) {
+    const tttsMap = new Map([
+      [TokenType.EOF, "EOF"],
+      [TokenType.ASSIGN, "ASSIGN"],
+      [TokenType.SEMICOLON, "SEMICOLON"],
+    ]);
+
+    return tttsMap.get(tt);
   }
   
   export interface Token {
@@ -49,6 +60,7 @@ export enum TokenType {
   const keywords = new Map<string, TokenType>([
     ["fn", TokenType.FUNCTION],
     ["let", TokenType.LET],
+    ["const", TokenType.CONST],
     ["return", TokenType.RETURN],
     ["if", TokenType.IF],
     ["else", TokenType.ELSE],

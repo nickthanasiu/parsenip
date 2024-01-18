@@ -5,6 +5,7 @@ import * as ast from "./ast";
 test('Parse let statements', () => {
 
     const input = `
+        let myVar;
         let x = 5;
         let y = 10;
 
@@ -12,9 +13,10 @@ test('Parse let statements', () => {
     `;
 
     const expected = ast.program([
-        ast.letStatement(ast.identifier("x")),
-        ast.letStatement(ast.identifier("y")),
-        ast.letStatement(ast.identifier("foobar")),
+        ast.variableDeclaration(false, ast.identifier("myVar")),
+        ast.variableDeclaration(false, ast.identifier("x"), ast.integerLiteral(5)),
+        ast.variableDeclaration(false, ast.identifier("y"), ast.integerLiteral(10)),
+        ast.variableDeclaration(false, ast.identifier("foobar"), ast.integerLiteral(838383)),
     ]);
 
     const actual = parse(input);
@@ -23,6 +25,22 @@ test('Parse let statements', () => {
 });
 
 
+
+test('Parse const statements', () => {
+    const input  = `
+        const myVar = 100;
+        let foo;
+    `;
+
+    const expected = ast.program([
+        ast.variableDeclaration(true, ast.identifier("myVar"), ast.integerLiteral(100)),
+        ast.variableDeclaration(false, ast.identifier("foo")),
+    ]);
+
+    const actual = parse(input);
+
+    expect(actual).toStrictEqual(expected);
+});
 
 test('Parse return statements', () => {
     
