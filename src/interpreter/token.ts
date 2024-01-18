@@ -1,41 +1,40 @@
+
 export enum TokenType {
-    EOF = "\0",
-    ILLEGAL = "ILLEGAL",
+    EOF,
+    ILLEGAL,
   
     // Identifiers and literals
-    IDENT = "IDENT", // foobar, add, x, y, etc.
-    INT = "INT", // 12345
+    IDENT, // foobar, add, x, y, etc.
+    INT, // 12345
   
     // Operators
-    ASSIGN = "=",
-    PLUS = "+",
-    MINUS = "-",
-    ASTERISK = "*",
-    SLASH = "/",
-    BANG = "!",
-    EQ = "==",
-    NOT_EQ = "!=",
-    LT = "<",
-    GT = ">",
+    ASSIGN,
+    PLUS,
+    MINUS,
+    ASTERISK,
+    SLASH,
+    BANG,
+    EQ,
+    NOT_EQ,
+    LT,
+    GT,
   
     // Delimiters
-    COMMA = ",",
-    SEMICOLON = ";",
-  
-    LPAREN = "(",
-    RPAREN = ")",
-    LBRACE = "{",
-    RBRACE = "}",
+    COMMA,
+    SEMICOLON,
+    LPAREN,
+    RPAREN,
+    LBRACE,
+    RBRACE,
   
     // Keywords
-    FUNCTION = "fn",
-    LET = "let",
-    RETURN = "return",
-    IF = "if",
-    ELSE = "else",
-
-    TRUE = "true",
-    FALSE = "false",
+    FUNCTION,
+    LET,
+    RETURN,
+    IF,
+    ELSE,
+    TRUE,
+    FALSE,
   }
   
   export interface Token {

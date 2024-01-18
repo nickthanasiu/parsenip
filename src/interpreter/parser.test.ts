@@ -1,7 +1,6 @@
 import { Lexer } from "./lexer";
 import { Parser } from "./parser";
 import * as ast from "./ast";
-import { TokenType } from "./token";
 
 test('Parse let statements', () => {
 
@@ -61,25 +60,25 @@ test('Parse prefix expressions', () => {
         // !5;
         ast.program([
             ast.expressionStatement(
-                ast.prefixExpression(TokenType.BANG, ast.integerLiteral(5))
+                ast.prefixExpression("!", ast.integerLiteral(5))
             ),
         ]),
         // -15
         ast.program([
             ast.expressionStatement(
-                ast.prefixExpression(TokenType.MINUS, ast.integerLiteral(15))
+                ast.prefixExpression("-", ast.integerLiteral(15))
             )
         ]),
         // !true
         ast.program([
             ast.expressionStatement(
-                ast.prefixExpression(TokenType.BANG, ast.booleanLiteral(true))
+                ast.prefixExpression("!", ast.booleanLiteral(true))
             )
         ]),
         // !false
         ast.program([
             ast.expressionStatement(
-                ast.prefixExpression(TokenType.BANG, ast.booleanLiteral(false))
+                ast.prefixExpression("!", ast.booleanLiteral(false))
             )
         ]),
     ];

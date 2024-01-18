@@ -19,7 +19,7 @@ export class Lexer implements Lexer {
   public readChar() {
 
     if (this.position >= this.input.length) {
-      this.ch = TokenType.EOF;
+      this.ch = "\0";
     } else {
       this.ch = this.input[this.position];
     }

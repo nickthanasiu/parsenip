@@ -12,6 +12,8 @@ type SupportedType =
 
     */
 
+
+/*
 export function deepEquals(a: unknown, b: unknown): boolean {
 
     if (typeof a !== typeof b) return false;
@@ -62,5 +64,7 @@ export function deepEquals(a: unknown, b: unknown): boolean {
      *  we can assume they are primitive types (string, boolean, number, undefined, null)
      *  and thus can simply be compared using the '===' operator
     */
+    /*
     return a === b;
 }
+*/
