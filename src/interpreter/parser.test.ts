@@ -118,7 +118,7 @@ test('Parse prefix expressions', () => {
 });
 
 test('Parse infix expressions', () => {
-    const operators = ["+", "-", "*", "/", ">", "<", /* "==", "!="*/];
+    const operators = ["+", "-", "*", "/", ">", "<", "==", "!="];
 
     const expected = operators.map(operator => {
         return ast.program([
