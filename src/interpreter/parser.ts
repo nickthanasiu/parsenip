@@ -138,36 +138,22 @@ export class Parser implements Parser {
         return declaration;
     }
 
-    /*
-    private parseLetStatement() {
-        
-        if (!this.expectPeek(TokenType.IDENT)) return null; // expectPeek checks peek token and advances parser
-        
-        const name = ast.identifier(this.currToken.literal);
-        
-        if (!this.expectPeek(TokenType.ASSIGN)) return null;
-        
-        // @TODO: We're going to skip parsing expressions for now
-        while (!this.currTokenIs(TokenType.SEMICOLON)) {
-            this.nextToken();
-        }
-        
-        return ast.letStatement(name);
-    }
-
-    */
-
     private parseReturnStatement() {
-        const statement = ast.returnStatement();
-
         this.nextToken();
 
-        // @TODO: We're going to skip parsing expressions for now
-        while (!this.currTokenIs(TokenType.SEMICOLON)) {
-            this.nextToken();
+        const expression = this.parseExpression(Precedence.LOWEST);
+
+        if (!expression) {
+            this.errors.push(`Expected expression following 'return'`);
+            return null;
         }
 
-        return statement;
+        if (!this.expectPeek(TokenType.SEMICOLON)) {
+            this.errors.push(`Return statement must end with semicolon`);
+            return null;
+        }
+        
+        return ast.returnStatement(expression);
     }
 
     private parseExpressionStatement() {

@@ -86,19 +86,6 @@ export type Statement =
     | ExpressionStatement
 ;
 
-export interface LetStatement {
-    type: "letStatement";
-    name: Identifier;
-    value?: Expression; // Optional because we're skipping parsing expressions for now
-};
-
-export function letStatement(name: Identifier): LetStatement {
-    return {
-        type: "letStatement",
-        name
-    };
-}
-
 export interface VariableDeclarationStatement {
     type: "variableDeclaration";
     constant: boolean;
@@ -117,12 +104,13 @@ export function variableDeclaration(constant: boolean, identifier: Identifier, v
 
 export interface ReturnStatement {
     type: "returnStatement";
-    //returnValue: Expression;
+    returnValue: Expression;
 }
 
-export function returnStatement(): ReturnStatement {
+export function returnStatement(expression: Expression): ReturnStatement {
     return {
         type: "returnStatement",
+        returnValue: expression
     };
 }
 

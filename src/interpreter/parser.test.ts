@@ -48,12 +48,16 @@ test('Parse return statements', () => {
         return 5;
         return 10;
         return 993322;
+        return true;
+        return false;
     `;
 
     const expected = ast.program([
-        ast.returnStatement(),
-        ast.returnStatement(),
-        ast.returnStatement(),
+        ast.returnStatement(ast.integerLiteral(5)),
+        ast.returnStatement(ast.integerLiteral(10)),
+        ast.returnStatement(ast.integerLiteral(993322)),
+        ast.returnStatement(ast.booleanLiteral(true)),
+        ast.returnStatement(ast.booleanLiteral(false)),
     ]);
 
     const actual = parse(input);
