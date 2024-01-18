@@ -16,7 +16,7 @@ interface Props {
 }
 
 export default function ResultsPanels(props: Props) {
-    const [activeTab, setActiveTab] = useState<TabName>('tokens');
+    const [activeTab, setActiveTab] = useState<TabName>('parser');
 
     const tabs: Tab[] = [
         { name: 'tokens', displayName: 'Tokens' },

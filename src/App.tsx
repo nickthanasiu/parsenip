@@ -5,7 +5,9 @@ import ResultsPanels from './features/resultsPanels';
 import './App.css';
 
 export default function App() {
-  const initialValue = "let five = 5;\nlet six = 6;"//\n\nfn incr(num) {\n\tnum + 1;\n}\n\nlet six = incr(five);";
+  const initialValue = "let five = 5;\nlet six = 6;\nfive != six;"
+  
+  //\n\nfn incr(num) {\n\tnum + 1;\n}\n\nlet six = incr(five);";
   const [editorInput, setEditorInput] = useState(initialValue);
   
   return (
