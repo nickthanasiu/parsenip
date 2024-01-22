@@ -3,10 +3,11 @@ import { colors } from "./colors";
 
 interface Props {
     token: Token;
+    highlighted: boolean;
 }
 
-export default function TokenCard({ token }: Props) {
-    const { type, literal } = token;
+export default function TokenCard({ token, highlighted }: Props) {
+    const { type, literal, position } = token;
 
     const tokenColor =
         type === TokenType.ILLEGAL
@@ -25,6 +26,7 @@ export default function TokenCard({ token }: Props) {
         width: 'auto',
         borderColor: tokenColor,
         color: tokenColor,
+        backgroundColor: highlighted ? 'yellow' : '',
     };
 
     const keyColor = isIllegal ? colors.red : colors.gold;
@@ -39,6 +41,16 @@ export default function TokenCard({ token }: Props) {
             <div>
                 <span style={{ color: keyColor }}>value: </span>
                 <span style={{ color: valueColor }}>{literal}</span>
+            </div>
+
+            <div>
+                <span style={{ color: keyColor }}>start: </span>
+                <span style={{ color: valueColor }}>{position.start}</span>
+            </div>
+
+            <div>
+                <span style={{ color: keyColor }}>end: </span>
+                <span style={{ color: valueColor }}>{position.end}</span>
             </div>
         </div>
     );

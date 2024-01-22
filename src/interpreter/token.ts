@@ -50,13 +50,19 @@ export enum TokenType {
     return tttsMap.get(tt);
   }
   
+interface Position {
+  start: number;
+  end: number;
+}
+
   export interface Token {
     type: TokenType;
     literal: string;
+    position: Position;
   }
   
-  export function newToken(type: TokenType, text: string): Token {
-    return { type, literal: text };
+  export function newToken(type: TokenType, text: string, position?: Position): Token {
+    return { type, literal: text, position: position || { start: -1, end: -1 } };
   }
   
   const keywords = new Map<string, TokenType>([
@@ -70,7 +76,7 @@ export enum TokenType {
     ["false", TokenType.FALSE],
   ]);
   
-  export function lookupIdentifer(text: string) {
+  export function lookupIdentifer(text: string, position: Position) {
     const type = keywords.get(text) || TokenType.IDENT;
-    return newToken(type, text);
+    return newToken(type, text, position);
   }
