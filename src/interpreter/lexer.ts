@@ -93,6 +93,12 @@ export class Lexer implements Lexer {
       case "}":
         token = newToken(TokenType.RBRACE, "}");
         break;
+      case "[":
+        token = newToken(TokenType.LBRACKET, "[");
+        break;
+      case "]":
+        token = newToken(TokenType.RBRACKET, "]");
+        break;
       case "\0":
         token = newToken(TokenType.EOF, "\0");
         break;

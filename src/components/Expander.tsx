@@ -1,4 +1,4 @@
-import { PropsWithChildren, useRef, useState } from "react";
+import { PropsWithChildren, useState } from "react";
 import { colors } from "../features/resultsPanels/colors";
 
 type Props = PropsWithChildren<{ 
@@ -6,6 +6,7 @@ type Props = PropsWithChildren<{
     defaultExpanded?: boolean
 }>
 
+/*
 function useExpanded() {
     const expandedRef = useRef(false);
 
@@ -15,10 +16,11 @@ function useExpanded() {
 
     return [expandedRef, setExpandedRef] as const;
 }
+*/
 
 export default function Expander({ title, children }: Props) {
 
-    const [expanded, setExpanded] = useState(false);
+    const [expanded, setExpanded] = useState(true);
 
 
     let indicator = { color: colors.green, symbol: "+" };

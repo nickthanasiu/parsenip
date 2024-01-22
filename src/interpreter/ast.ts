@@ -7,10 +7,13 @@ export type Node = Expression | Statement | Program;
 
 export type Expression = 
     | Identifier
-    | IntegerLiteral
-    | BooleanLiteral
     | PrefixExpression
     | InfixExpression
+
+    // Literals
+    | IntegerLiteral
+    | BooleanLiteral
+    | Object
 ;
 
 export interface Identifier {
@@ -48,6 +51,21 @@ export function booleanLiteral(value: boolean): BooleanLiteral {
         type: "booleanLiteral",
         value
     }
+}
+
+export interface Property {
+    type: "property",
+    key: string,
+    value?: Expression
+}
+
+export interface ObjectLiteral {
+    type: "objectLiteral",
+    properties: Property[]
+}
+
+export function objectLiteral() {
+    return;
 }
 
 export interface PrefixExpression {

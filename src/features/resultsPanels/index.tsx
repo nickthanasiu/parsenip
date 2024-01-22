@@ -13,6 +13,7 @@ type Tab = {
 
 interface Props {
     input: string;
+    cursorPosition: number;
 }
 
 export default function ResultsPanels(props: Props) {
@@ -50,6 +51,7 @@ export default function ResultsPanels(props: Props) {
 
     return (
         <div>
+            <div>Cursor Position: {props.cursorPosition}</div>
             <div style={tabsStyles}>
                 {tabs.map(t => 
                     <Tab 

@@ -1,35 +1,33 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { parse } from "../../interpreter/parser";
 import Expander from "../../components/Expander";
 import ASTNode from "./ASTNode";
 
-function useParserDiff() {
-    // We have a string of input
-
-    // String is passed to parse, which returns an array of statements
-}
-
 
 export default function ParserPanel({ input }: { input: string; }) {
-    const program = useMemo(() => parse(input), [input]);
-
-    useEffect(() => {
-        console.log('Received new input ', input);
-    }, [input]);
-
-    const styles = {
-        paddingLeft: '25px',
-    };
+    const [program, errors] = useMemo(() => parse(input), [input]);
 
     return (
-        <div style={styles}>
-            {program.body.map(statement => 
+        <div>
+            {errors 
+                ? <ParserErrors errors={errors} />
+                : program.body.map(statement => 
                     <div>
                         <Expander title={statement.type}>
                             <ASTNode node={statement} />
                         </Expander>
                     </div>
-                )}
+            )}
+        </div>
+    );
+}
+
+function ParserErrors({ errors }: { errors: string[] }) {
+    return (
+        <div style={{ backgroundColor: '#f09999' }}>
+            <h3>Found the following errors while parsing: </h3>
+
+            {errors.map(err => <p>{err}</p>)}
         </div>
     );
 }

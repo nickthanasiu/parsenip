@@ -1,5 +1,4 @@
-import { Lexer } from "./lexer";
-import { Parser } from "./parser";
+import { parse } from "./parser";
 import * as ast from "./ast";
 
 test('Parse let statements', () => {
@@ -19,7 +18,7 @@ test('Parse let statements', () => {
         ast.variableDeclaration(false, ast.identifier("foobar"), ast.integerLiteral(838383)),
     ]);
 
-    const actual = parse(input);
+    const actual = parse(input, { throwOnError: true });
 
     expect(actual).toStrictEqual(expected);
 });
@@ -37,7 +36,7 @@ test('Parse const statements', () => {
         ast.variableDeclaration(false, ast.identifier("foo")),
     ]);
 
-    const actual = parse(input);
+    const actual = parse(input, { throwOnError: true });
 
     expect(actual).toStrictEqual(expected);
 });
@@ -60,7 +59,7 @@ test('Parse return statements', () => {
         ast.returnStatement(ast.booleanLiteral(false)),
     ]);
 
-    const actual = parse(input);
+    const actual = parse(input, { throwOnError: true });
 
     expect(actual).toStrictEqual(expected);
 });
@@ -71,7 +70,7 @@ test('Parse integer literals', () => {
     ]);
 
     const input = "5";
-    const actual = parse(input);
+    const actual = parse(input, { throwOnError: true });
 
     expect(actual).toStrictEqual(expected);
 });
@@ -112,7 +111,7 @@ test('Parse prefix expressions', () => {
         "!false;",
     ];
 
-    const actual = inputs.map(parse);
+    const actual = inputs.map(input => parse(input, { throwOnError: true }));
 
     expect(actual).toStrictEqual(expected);
 });
@@ -132,29 +131,7 @@ test('Parse infix expressions', () => {
         ]);
     })
 
-    const actual = operators.map(operator => parse(`5 ${operator} 5;`));
+    const actual = operators.map(operator => parse(`5 ${operator} 5;`, { throwOnError: true }));
 
     expect(actual).toStrictEqual(expected);
 });
-
-
-// Helper for parser tests
-function parse(input: string) {
-    const lexer = new Lexer(input);
-    const parser = new Parser(lexer);
-    const program = parser.parseProgram();
-    checkParserErrors(parser);
-    return program;
-}
-
-
-function checkParserErrors({ errors }: Parser) {
-    if (errors.length) {
-        let message = `Parser has ${errors.length} errors\n\n`;
-        for (const error of errors) {
-            message += `ERROR: ${error}'\n')`;
-        }
-
-        throw new Error(message);
-    }
-}

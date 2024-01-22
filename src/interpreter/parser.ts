@@ -100,7 +100,7 @@ export class Parser implements Parser {
     // let IDENT;
     // (let | const) IDENT = EXPRESSION;
     private parseVariableDeclaration() {
-        const isConstant = this.currToken.type === TokenType.CONST;
+        const isConstant = this.currTokenIs(TokenType.CONST);
 
         if (!this.expectPeek(TokenType.IDENT)) {
             const errorMsg = `Expected identifier name following ${isConstant ? 'const' : 'let'} keyword`;
@@ -193,6 +193,20 @@ export class Parser implements Parser {
         return leftExp;
     }
 
+    private parseObjectExpression() {
+        if (!this.expectPeek(TokenType.LBRACE)) {
+            this.errors.push(`Expected {, but found ${this.peekToken}`);
+            return null;
+        }
+
+        const properties: ast.Property[] = [];
+
+
+        while (!this.currTokenIs(TokenType.EOF) && !this.currTokenIs(TokenType.RBRACE)) {
+            
+        }
+    }
+
     private parsePrefixExpression() {
         const prefixOperator = this.currToken.literal;
         this.nextToken();
@@ -235,7 +249,7 @@ export class Parser implements Parser {
     }
 
     private parseBooleanLiteral() {
-        return ast.booleanLiteral(this.currToken.type === TokenType.TRUE);
+        return ast.booleanLiteral(this.currTokenIs(TokenType.TRUE));
     }
 
 
@@ -288,26 +302,31 @@ export class Parser implements Parser {
     }
 }
 
+interface ParseOptions {
+    throwOnError?: boolean;
+}
 
-export function parse(input: string) {
+export function parse(input: string, { throwOnError }: ParseOptions = {}) {
     const lexer = new Lexer(input);
     const parser = new Parser(lexer);
 
     const program = parser.parseProgram();
+    const errors = checkParserErrors(parser, !!throwOnError);
 
-    checkParserErrors(parser);
-
-    return program;
+    return [program, errors] as [ast.Program, string[]];
 }
 
-export function checkParserErrors({ errors }: Parser) {
+export function checkParserErrors({ errors }: Parser, throwOnError = false) {
     if (errors.length) {
         let message = `Parser has ${errors.length} errors\n\n`;
         for (const error of errors) {
             message += `ERROR: ${error}\n`;
         }
 
-        throw new Error(message);
+        if (throwOnError) {
+            throw new Error(message);
+        } else {
+            return errors;
+        }
     }
-
 }
