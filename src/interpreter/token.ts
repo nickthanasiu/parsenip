@@ -50,7 +50,7 @@ export enum TokenType {
     return tttsMap.get(tt);
   }
   
-interface Position {
+export interface Position {
   start: number;
   end: number;
 }

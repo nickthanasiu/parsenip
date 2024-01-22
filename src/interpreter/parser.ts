@@ -100,6 +100,7 @@ export class Parser implements Parser {
     // let IDENT;
     // (let | const) IDENT = EXPRESSION;
     private parseVariableDeclaration() {
+        const start = this.currToken.position.start;
         const isConstant = this.currTokenIs(TokenType.CONST);
 
         if (!this.expectPeek(TokenType.IDENT)) {
@@ -108,7 +109,11 @@ export class Parser implements Parser {
             return null;
         }
 
-        const identifier = ast.identifier(this.currToken.literal);
+
+        const identifier = ast.identifier(
+            this.currToken.literal,
+            this.currToken.position
+        );
 
         if (this.expectPeek(TokenType.SEMICOLON)) {
             if (isConstant) {
@@ -116,7 +121,14 @@ export class Parser implements Parser {
                 return null;
             }
 
-            return ast.variableDeclaration(isConstant, identifier);
+            return ast.variableDeclaration(
+                isConstant,
+                identifier,
+                {
+                    start,
+                    end: this.currToken.position.end
+                }
+            );
         }
 
         if (!this.expectPeek(TokenType.ASSIGN)) {
@@ -128,7 +140,12 @@ export class Parser implements Parser {
 
         const value = this.parseExpression(Precedence.LOWEST);
 
-        const declaration = ast.variableDeclaration(isConstant, identifier, value);
+        const declaration = ast.variableDeclaration(
+            isConstant,
+            identifier,
+            { start, end: this.currToken.position.end },
+            value,
+        );
 
         if (!this.expectPeek(TokenType.SEMICOLON)) {
             this.errors.push(`Variable declaration statement must end with semicolon`);
@@ -139,6 +156,7 @@ export class Parser implements Parser {
     }
 
     private parseReturnStatement() {
+        const start = this.currToken.position.start;
         this.nextToken();
 
         const expression = this.parseExpression(Precedence.LOWEST);
@@ -153,10 +171,14 @@ export class Parser implements Parser {
             return null;
         }
         
-        return ast.returnStatement(expression);
+        return ast.returnStatement(expression, {
+            start,
+            end: this.currToken.position.end
+        });
     }
 
     private parseExpressionStatement() {
+        const start = this.currToken.position.start;
         const expression = this.parseExpression(Precedence.LOWEST);
 
         if (!expression) return null;
@@ -165,7 +187,10 @@ export class Parser implements Parser {
             this.nextToken();
         }
         
-        return ast.expressionStatement(expression);
+        return ast.expressionStatement(expression, {
+            start,
+            end: this.currToken.position.end
+        });
     }
 
     private parseExpression(precedence: number) {
@@ -208,6 +233,7 @@ export class Parser implements Parser {
     }
 
     private parsePrefixExpression() {
+        const start = this.currToken.position.start;
         const prefixOperator = this.currToken.literal;
         this.nextToken();
         const right = this.parseExpression(Precedence.PREFIX)
@@ -217,10 +243,18 @@ export class Parser implements Parser {
         }
         
 
-        return ast.prefixExpression(prefixOperator, right);
+        return ast.prefixExpression(
+            prefixOperator,
+            right,
+            {
+                start,
+                end: this.currToken.position.end
+            }
+        );
     }
 
     private parseInfixExpression(left: ast.Expression) {
+        const start = this.currToken.position.start;
         const infixOperator = this.currToken.literal;
         const precedence = this.currPrecedence();
         this.nextToken();
@@ -228,15 +262,26 @@ export class Parser implements Parser {
 
         if (!right) return null;
 
-        return ast.infixExpression(left, infixOperator, right);
+        return ast.infixExpression(
+            left,
+            infixOperator,
+            right,
+            {
+                start,
+                end: this.currToken.position.end
+            }
+        );
     }
 
     private parseIdentifier() {
-        return ast.identifier(this.currToken.literal);
+        return ast.identifier(
+            this.currToken.literal,
+            this.currToken.position
+        );
     }
 
     private parseIntegerLiteral() {
-        const { literal } = this.currToken;
+        const { literal, position: { start } } = this.currToken;
         const int = Number(literal);
 
         if (isNaN(int)) {  // @TODO is this the best way to parse/validate numbers?
@@ -245,11 +290,14 @@ export class Parser implements Parser {
             return null;
         }
 
-        return ast.integerLiteral(int); 
+        return ast.integerLiteral(int, { start, end: this.currToken.position.end}); 
     }
 
     private parseBooleanLiteral() {
-        return ast.booleanLiteral(this.currTokenIs(TokenType.TRUE));
+        return ast.booleanLiteral(
+            this.currTokenIs(TokenType.TRUE),
+            this.currToken.position
+        );
     }
 
 
