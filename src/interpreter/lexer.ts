@@ -119,7 +119,7 @@ export class Lexer implements Lexer {
         // or ILLEGAL, 
         else {
           console.error('Lexer does not recognize the following character ', this.ch);
-          token = newToken(TokenType.ILLEGAL, this.ch);
+          token = newToken(TokenType.ILLEGAL, this.ch, { start, end: this.position });
         }
     }
 
@@ -186,7 +186,7 @@ export function lex(input: string) {
     t = l.nextToken();
   }
 
-  tokens.push(newToken(TokenType.EOF, '\0'));
+  tokens.push(newToken(TokenType.EOF, '\0', { start: l.position, end: l.position }));
 
   return tokens;
 };

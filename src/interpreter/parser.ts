@@ -222,6 +222,8 @@ export class Parser implements Parser {
         return leftExp;
     }
 
+    /*
+
     private parseObjectExpression() {
         if (!this.expectPeek(TokenType.LBRACE)) {
             this.errors.push(`Expected {, but found ${this.peekToken}`);
@@ -235,6 +237,8 @@ export class Parser implements Parser {
             
         }
     }
+
+    */
 
     private parsePrefixExpression() {
         const start = this.currToken.position.start;

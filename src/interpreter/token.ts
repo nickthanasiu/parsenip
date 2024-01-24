@@ -61,7 +61,7 @@ export interface Position {
     position: Position;
   }
   
-  export function newToken(type: TokenType, text: string, position?: Position): Token {
+  export function newToken(type: TokenType, text: string, position: Position): Token {
     return { type, literal: text, position: position || { start: -1, end: -1 } };
   }
   
