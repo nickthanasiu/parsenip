@@ -1,23 +1,46 @@
 import Editor from "@monaco-editor/react";
-import { editor } from "monaco-editor";
-import { useRef, Dispatch, SetStateAction } from "react";
-
-type Editor = editor.IStandaloneCodeEditor;
+import { Position, editor } from "monaco-editor";
+import { useState, Dispatch, SetStateAction, useEffect } from "react";
 
 interface Props {
     initialValue: string;
+    editorRef: React.MutableRefObject<editor.IStandaloneCodeEditor | undefined>;
     setEditorInput: Dispatch<SetStateAction<string>>;
+    updateCursorPosition: any;
 }
 
-export default function TextEditor({ initialValue, setEditorInput }: Props) {
-    const editorRef = useRef<Editor>();
+export default function TextEditor({ initialValue, editorRef, setEditorInput, updateCursorPosition }: Props) {
 
-    function handleEditorMount(editor: Editor) {
+    useEffect(() => {
+        document.addEventListener('keyup', handleKeyUp);
+
+        return () => {
+            document.removeEventListener('keyup', handleKeyUp);
+        }
+    }, []);
+
+
+    function handleEditorMount(editor: editor.IStandaloneCodeEditor) {
         editorRef.current = editor;
     }
 
     function handleChange() {
         setEditorInput(editorRef.current?.getValue() || '');
+        updateCursorPosition();
+    }
+
+
+    function handleKeyUp({ key }: KeyboardEvent) {
+        switch (key) {
+            case 'ArrowUp':
+            case 'ArrowDown':
+            case 'ArrowLeft':
+            case 'ArrowRight':
+                updateCursorPosition();
+                return;
+            default:
+                return;
+        }
     }
 
     const options = {
@@ -26,10 +49,30 @@ export default function TextEditor({ initialValue, setEditorInput }: Props) {
         theme: 'vs-dark',
         value: initialValue,
         onMount: handleEditorMount,
-        onChange: handleChange
+        onChange: handleChange,
     };
 
     return (
-        <Editor {...options} />
+        <div onClick={updateCursorPosition}>
+            <Editor {...options} />
+        </div>
     );
+}
+
+export function useCursorPosition(editorRef: React.MutableRefObject<editor.IStandaloneCodeEditor | undefined>) {
+
+    const [cursorPosition, setPosition] = useState(0);
+
+    function updateCursorPosition() {
+        const editor = editorRef.current;
+
+        if (editor) {
+            const cursorPosition = editor?.getModel()?.getOffsetAt(editor.getPosition() as Position);
+            if (cursorPosition) {
+                setPosition(cursorPosition);
+            }
+        }
+    }
+
+    return [cursorPosition, updateCursorPosition] as [number, typeof updateCursorPosition];
 }

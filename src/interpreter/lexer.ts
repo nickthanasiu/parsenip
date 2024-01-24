@@ -19,7 +19,7 @@ export class Lexer implements Lexer {
   public readChar() {
 
     if (this.position >= this.input.length) {
-      this.ch = TokenType.EOF;
+      this.ch = "\0";
     } else {
       this.ch = this.input[this.position];
     }
@@ -27,44 +27,82 @@ export class Lexer implements Lexer {
     this.position += 1;
   }
 
+  peekChar() {
+    if (this.position >= this.input.length) {
+      return "\0";
+    } else {
+      return this.input[this.position];
+    }
+  }
+
   public nextToken() {
     this.skipWhitespace();
 
     let token: Token;
 
+    let start = this.position - 1;
+
     switch (this.ch) {
       case "=":
-        token = newToken(TokenType.ASSIGN, "=");
+        if (this.peekChar() === "=") {
+          this.readChar();
+          token = newToken(TokenType.EQ, "==", { start, end: this.position });
+        } else {
+          token = newToken(TokenType.ASSIGN, "=", { start, end: this.position });
+        }
         break;
       case "+":
-        token = newToken(TokenType.PLUS, "+");
+        token = newToken(TokenType.PLUS, "+", { start, end: this.position });
         break;
       case "-":
-        token = newToken(TokenType.MINUS, "-")
+        token = newToken(TokenType.MINUS, "-", { start, end: this.position })
+        break;
+      case "*":
+        token = newToken(TokenType.ASTERISK, "*", { start, end: this.position });
+        break;
+      case "/":
+        token = newToken(TokenType.SLASH, "/", { start, end: this.position });
         break;
       case "!":
-        token = newToken(TokenType.BANG, "!");
+        if (this.peekChar() === "=") {
+          this.readChar();
+          token = newToken(TokenType.NOT_EQ, "!=", { start, end: this.position });
+        } else {
+          token = newToken(TokenType.BANG, "!", { start, end: this.position });
+        }
+        break;
+      case "<":
+        token = newToken(TokenType.LT, "<", { start, end: this.position });
+        break;
+      case ">":
+        token = newToken(TokenType.GT, ">", { start, end: this.position });
         break;
       case ",":
-        token = newToken(TokenType.COMMA, ",");
+        token = newToken(TokenType.COMMA, ",", { start, end: this.position });
         break;
       case ";":
-        token = newToken(TokenType.SEMICOLON, ";");
+        token = newToken(TokenType.SEMICOLON, ";", { start, end: this.position });
         break;
       case "(":
-        token = newToken(TokenType.LPAREN, "(");
+        token = newToken(TokenType.LPAREN, "(", { start, end: this.position });
         break;
       case ")":
-        token = newToken(TokenType.RPAREN, ")");
+        token = newToken(TokenType.RPAREN, ")", { start, end: this.position });
         break;
       case "{":
-        token = newToken(TokenType.LBRACE, "{");
+        token = newToken(TokenType.LBRACE, "{", { start, end: this.position });
         break;
       case "}":
-        token = newToken(TokenType.RBRACE, "}");
+        token = newToken(TokenType.RBRACE, "}", { start, end: this.position });
+        break;
+      case "[":
+        token = newToken(TokenType.LBRACKET, "[", { start, end: this.position });
+        break;
+      case "]":
+        token = newToken(TokenType.RBRACKET, "]", { start, end: this.position });
         break;
       case "\0":
-        token = newToken(TokenType.EOF, "\0");
+        token = newToken(TokenType.EOF, "\0", { start, end: this.position });
         break;
       default:
         // Ch is either:
@@ -80,8 +118,8 @@ export class Lexer implements Lexer {
         }
         // or ILLEGAL, 
         else {
-          console.log('DO NOT KNOW WHAT TO DO WITH THIS')
-          token = newToken(TokenType.ILLEGAL, this.ch);
+          console.error('Lexer does not recognize the following character ', this.ch);
+          token = newToken(TokenType.ILLEGAL, this.ch, { start, end: this.position });
         }
     }
 
@@ -98,7 +136,7 @@ export class Lexer implements Lexer {
     }
 
     const text = this.input.slice(start, this.position - 1);
-    return lookupIdentifer(text);
+    return lookupIdentifer(text, { start, end: this.position - 1 });
   }
 
   readNumber() {
@@ -109,7 +147,7 @@ export class Lexer implements Lexer {
     }
 
     const text = this.input.slice(start, this.position - 1);
-    return newToken(TokenType.INT, text);
+    return newToken(TokenType.INT, text, { start, end: this.position - 1 });
   }
 
   skipWhitespace() {
@@ -141,14 +179,14 @@ export function lex(input: string) {
 
   const tokens: Token[] = [];
 
-  let token = l.nextToken();
+  let t = l.nextToken();
 
-  while (token.type !== TokenType.EOF) {
-    tokens.push(token);
-    token = l.nextToken();
+  while (t.type !== TokenType.EOF) {
+    tokens.push(t);
+    t = l.nextToken();
   }
 
-  tokens.push(newToken(TokenType.EOF, '\0'));
+  tokens.push(newToken(TokenType.EOF, '\0', { start: l.position, end: l.position }));
 
   return tokens;
 };

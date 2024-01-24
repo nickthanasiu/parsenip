@@ -1,4 +1,4 @@
-import { Token, TokenType, newToken } from "./token";
+import { Position } from "./token";
 
 export type Node = Expression | Statement | Program;
 
@@ -8,112 +8,158 @@ export type Node = Expression | Statement | Program;
 
 export type Expression = 
     | Identifier
+    | PrefixExpression
+    | InfixExpression
+
+    // Literals
     | IntegerLiteral
     | BooleanLiteral
-    | PrefixExpression
+    //| Object
 ;
 
-export interface Identifier {
-    token: Token;
+
+
+export interface Identifier extends Position {
+    type: "identifier",
     value: string;
 };
 
-export function identifier(value: string): Identifier {
+export function identifier(value: string, position: Position): Identifier {
     return {
-        token: newToken(TokenType.IDENT, value),
-        value
+        type: "identifier",
+        value,
+        ...position,
     }
 }
 
-export interface IntegerLiteral {
-    token: Token;
+export interface IntegerLiteral extends Position {
+    type: "integerLiteral";
     value: number;
 }
 
-export function integerLiteral(value: number): IntegerLiteral {
+export function integerLiteral(value: number, position: Position): IntegerLiteral {
     return {
-        token: newToken(TokenType.IDENT, value.toString()),
-        value: value
+        type: "integerLiteral",
+        value,
+        ...position
     };
 }
 
-export interface BooleanLiteral {
-    token: Token;
+export interface BooleanLiteral extends Position {
+    type: 'booleanLiteral';
     value: boolean;
 }
 
 
-/*
-export function booleanLiteral(value: boolean): BooleanLiteral {
+export function booleanLiteral(value: boolean, position: Position): BooleanLiteral {
     return {
-        token: newToken(TokenType.ASSIGN)
-        value
+        type: "booleanLiteral",
+        value,
+        ...position
     }
 }
-*/
 
-export interface PrefixExpression {
-    token: Token;
+export interface Property {
+    type: "property",
+    key: string,
+    value?: Expression
+}
+
+export interface ObjectLiteral extends Position {
+    type: "objectLiteral",
+    properties: Property[]
+}
+
+export function objectLiteral() {
+    return;
+}
+
+export interface PrefixExpression extends Position {
+    type: "prefixExpression";
     operator: string;
     right: Expression;
 }
 
-export function prefixExpression(token: Token, right: Expression): PrefixExpression {
+export function prefixExpression(operator: string, right: Expression, position: Position): PrefixExpression {
     return {
-        token,
-        operator: token.literal,
-        right
+        type: "prefixExpression",
+        operator,
+        right,
+        ...position
     }
+}
+
+interface InfixExpression extends Position {
+    type: "infixExpression";
+    left: Expression;
+    operator: string;
+    right: Expression;
+}
+
+export function infixExpression(left: Expression, operator: string, right: Expression, position: Position): InfixExpression {
+    return {
+        type: "infixExpression",
+        left,
+        operator,
+        right,
+        ...position
+    };
 }
 
 ////////////////
 // Statements
 ////////////////
 
-export type Statement = 
-    | LetStatement
+export type Statement =
+    | VariableDeclarationStatement
     | ReturnStatement
     | ExpressionStatement
 ;
 
-export interface LetStatement {
-    type: "LetStatement";
-    token: Token;
-    name: Identifier;
-    value?: Expression;
-};
+export interface VariableDeclarationStatement extends Position {
+    type: "variableDeclaration";
+    constant: boolean;
+    identifier: Identifier;
+    value?: Expression | null;
+}
 
-export function letStatement(name: Identifier): LetStatement {
+export function variableDeclaration(
+    constant: boolean,
+    identifier: Identifier,
+    position: Position,
+    value?: Expression | null,
+): VariableDeclarationStatement {
     return {
-        type: "LetStatement",
-        token: newToken(TokenType.LET, "let"),
-        name
+        type: "variableDeclaration",
+        ...position,
+        constant,
+        identifier,
+        value,
+    }
+}
+
+export interface ReturnStatement extends Position {
+    type: "returnStatement";
+    returnValue: Expression;
+}
+
+export function returnStatement(expression: Expression, position: Position): ReturnStatement {
+    return {
+        type: "returnStatement",
+        ...position,
+        returnValue: expression
     };
 }
 
-export interface ReturnStatement {
-    type: "ReturnStatement";
-    token: Token;
-    //returnValue: Expression;
-}
-
-export function returnStatement(): ReturnStatement {
-    return {
-        type: "ReturnStatement",
-        token: newToken(TokenType.RETURN, "return"),
-    };
-}
-
-export interface ExpressionStatement {
-    type: "ExpressionStatement";
-    token: Token;
+export interface ExpressionStatement extends Position {
+    type: "expressionStatement";
     expression: Expression;
 }
 
-export function expressionStatement(token: Token, expression: Expression): ExpressionStatement {
+export function expressionStatement(expression: Expression, position: Position): ExpressionStatement {
     return {
-        type: "ExpressionStatement",
-        token,
+        type: "expressionStatement",
+        ...position,
         expression
     }
 }
@@ -122,14 +168,15 @@ export function expressionStatement(token: Token, expression: Expression): Expre
 // Program
 ////////////////
 
-export interface Program {
-    type: "Program";
+export interface Program extends Position {
+    type: "program";
     body: Statement[];
 }
 
-export function program(statements: Statement[] = []): Program {
+export function program(statements: Statement[] = [], position: Position): Program {
     return {
-        type: "Program",
-        body: statements
+        type: "program",
+        ...position,
+        body: statements,
     };
 }

@@ -13,10 +13,11 @@ type Tab = {
 
 interface Props {
     input: string;
+    cursorPosition: number;
 }
 
 export default function ResultsPanels(props: Props) {
-    const [activeTab, setActiveTab] = useState<TabName>('tokens');
+    const [activeTab, setActiveTab] = useState<TabName>('parser');
 
     const tabs: Tab[] = [
         { name: 'tokens', displayName: 'Tokens' },
@@ -50,6 +51,7 @@ export default function ResultsPanels(props: Props) {
 
     return (
         <div>
+            <div>Cursor Position: {props.cursorPosition}</div>
             <div style={tabsStyles}>
                 {tabs.map(t => 
                     <Tab 
