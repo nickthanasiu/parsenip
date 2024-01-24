@@ -68,21 +68,25 @@ export class Parser implements Parser {
     }
 
     public parseProgram() {
-        const program = ast.program();
+        const start = this.currToken.position.start;
+        const statements: ast.Statement[] = [];
 
         while (!this.currTokenIs(TokenType.EOF)) {
             const statement = this.parseStatement();
 
             
-            // If statement is not null, add it to program.body
+            // If statement is not null, add it to statements[]
             if (statement) {
-                program.body.push(statement);
+                statements.push(statement);
             }
 
             this.nextToken();
         }
 
-        return program;
+        return ast.program(statements, { 
+            start,
+            end: this.currToken.position.end
+        });
     }
 
     private parseStatement() {

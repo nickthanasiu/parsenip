@@ -1,27 +1,13 @@
-import { PropsWithChildren, useState } from "react";
+import { PropsWithChildren } from "react";
 import { colors } from "../features/resultsPanels/colors";
 
 type Props = PropsWithChildren<{ 
-    title: any,
-    defaultExpanded?: boolean
+    title: string;
+    expanded: boolean;
+    toggleExpanded: any; // TODO update with more specific type
 }>
 
-/*
-function useExpanded() {
-    const expandedRef = useRef(false);
-
-    const setExpandedRef = () => {
-        expandedRef.current = !expandedRef.current;
-    }
-
-    return [expandedRef, setExpandedRef] as const;
-}
-*/
-
-export default function Expander({ title, children }: Props) {
-
-    const [expanded, setExpanded] = useState(true);
-
+export default function Expander({ title, expanded, toggleExpanded, children }: Props) {
 
     let indicator = { color: colors.green, symbol: "+" };
 
@@ -33,7 +19,7 @@ export default function Expander({ title, children }: Props) {
     return (
         <div style={{ paddingLeft: '10px' }}>
             <span style={{ color: indicator.color }}>{indicator.symbol} </span>
-            <span style={{ color: colors.blue }} onClick={() => setExpanded(!expanded)}>
+            <span style={{ color: colors.blue }} onClick={toggleExpanded}>
                 {title}
             </span>
             {expanded && children}

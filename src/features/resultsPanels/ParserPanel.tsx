@@ -1,10 +1,8 @@
 import { useMemo } from "react";
 import { parse } from "../../interpreter/parser";
-import Expander from "../../components/Expander";
 import ASTNode from "./ASTNode";
 
-
-export default function ParserPanel({ input }: { input: string; }) {
+export default function ParserPanel({ input, cursorPosition }: { input: string; cursorPosition: number; }) {
     const [program, errors] = useMemo(() => parse(input), [input]);
 
     return (
@@ -13,9 +11,10 @@ export default function ParserPanel({ input }: { input: string; }) {
                 ? <ParserErrors errors={errors} />
                 : program.body.map(statement => 
                     <div>
-                        <Expander title={statement.type}>
-                            <ASTNode node={statement} />
-                        </Expander>
+                        <ASTNode 
+                            node={statement}
+                            cursorPosition={cursorPosition}
+                        />
                     </div>
             )}
         </div>

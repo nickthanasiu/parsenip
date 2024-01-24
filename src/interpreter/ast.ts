@@ -14,7 +14,7 @@ export type Expression =
     // Literals
     | IntegerLiteral
     | BooleanLiteral
-    | Object
+    //| Object
 ;
 
 
@@ -75,12 +75,14 @@ export function objectLiteral() {
 }
 
 export interface PrefixExpression extends Position {
+    type: "prefixExpression";
     operator: string;
     right: Expression;
 }
 
 export function prefixExpression(operator: string, right: Expression, position: Position): PrefixExpression {
     return {
+        type: "prefixExpression",
         operator,
         right,
         ...position
@@ -88,6 +90,7 @@ export function prefixExpression(operator: string, right: Expression, position: 
 }
 
 interface InfixExpression extends Position {
+    type: "infixExpression";
     left: Expression;
     operator: string;
     right: Expression;
@@ -95,6 +98,7 @@ interface InfixExpression extends Position {
 
 export function infixExpression(left: Expression, operator: string, right: Expression, position: Position): InfixExpression {
     return {
+        type: "infixExpression",
         left,
         operator,
         right,
@@ -164,14 +168,15 @@ export function expressionStatement(expression: Expression, position: Position):
 // Program
 ////////////////
 
-export interface Program {
+export interface Program extends Position {
     type: "program";
     body: Statement[];
 }
 
-export function program(statements: Statement[] = []): Program {
+export function program(statements: Statement[] = [], position: Position): Program {
     return {
         type: "program",
-        body: statements
+        ...position,
+        body: statements,
     };
 }
