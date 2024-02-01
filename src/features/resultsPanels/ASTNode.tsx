@@ -34,8 +34,16 @@ export default function ASTNode({ node: currNode, cursorPosition }: Props) {
 
     function cursorOverChildNode() {
         for (const val of Object.values(currNode)) {
-            if (isASTNode(val) && cursorOverNode(val)) {
-                return true;
+            if (isASTNode(val)) {
+                if (Array.isArray(val)) {
+                    if (val.some(v => isASTNode(v) && cursorOverNode(v))) {
+                        return true;
+                    }
+                }
+
+                if (cursorOverNode(val)) {
+                    return true;
+                }
             }
         }
 
@@ -61,12 +69,18 @@ export default function ASTNode({ node: currNode, cursorPosition }: Props) {
             >
                 {Object.entries(currNode).map(([key, value]) => {
                     return (
-                        <div>
+                        <div key={key}>
                             <span style={{ color: colors.gold }}>{key}: </span>
                             <span style={{ color: colors.seafoam }}>
                             {
                                 isASTNode(value)
-                                    ? <ASTNode node={value} cursorPosition={cursorPosition} />
+                                    ? Array.isArray(value)
+                                        ? <>
+                                            [
+                                            {value.map(v => <ASTNode node={v} cursorPosition={cursorPosition} />)}
+                                            ]
+                                          </>
+                                        : <ASTNode node={value} cursorPosition={cursorPosition} />
                                     : value
                             }
                             </span>

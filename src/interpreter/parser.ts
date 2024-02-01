@@ -1,6 +1,6 @@
 import { Lexer } from "./lexer";
 import * as ast from "./ast";
-import { Token, TokenType, tokenTypeToString } from "./token";
+import { Token, TokenType } from "./token";
 
 enum Precedence {
     LOWEST = 0,
@@ -42,6 +42,7 @@ export class Parser implements Parser {
         [TokenType.MINUS, this.parsePrefixExpression],
         [TokenType.TRUE, this.parseBooleanLiteral],
         [TokenType.FALSE, this.parseBooleanLiteral],
+        [TokenType.LBRACE, this.parseObjectExpression]
     ]);
 
     private infixParseFns = this.bindInfixParseFns([
@@ -197,11 +198,11 @@ export class Parser implements Parser {
         });
     }
 
-    private parseExpression(precedence: number) {
+    private parseExpression(precedence: number = Precedence.LOWEST) {
         const prefixParseFn = this.prefixParseFns.get(this.currToken.type);
 
         if (!prefixParseFn) {
-            const errorMsg = `No prefix parse function found for ${tokenTypeToString(this.currToken.type)}`;
+            const errorMsg = `No prefix parse function found for ${this.currToken.type}`;
             this.errors.push(errorMsg);
             return null;
         }
@@ -222,23 +223,63 @@ export class Parser implements Parser {
         return leftExp;
     }
 
-    /*
-
     private parseObjectExpression() {
-        if (!this.expectPeek(TokenType.LBRACE)) {
-            this.errors.push(`Expected {, but found ${this.peekToken}`);
-            return null;
-        }
+        let start = this.currToken.position.start;
 
         const properties: ast.Property[] = [];
 
-
         while (!this.currTokenIs(TokenType.EOF) && !this.currTokenIs(TokenType.RBRACE)) {
             
-        }
-    }
+            if (!this.expectPeek(TokenType.IDENT)) {
+                this.errors.push(`Expected key of ObjectLiteral to be an identifier, but found token of type ${this.peekToken.type}`);
+                return null;
+            }
 
-    */
+            const keyToken = this.currToken;
+            const key = ast.identifier(keyToken.literal, keyToken.position);
+            const property = ast.property(key, key); // Until we explictly define a value for the key, we can just assume that the key and value are the same (e.g., { foo, } )
+
+            this.nextToken();
+
+            if (this.currTokenIs(TokenType.COMMA)) {
+                this.nextToken(); // Move past COMMA
+                properties.push(property);
+                continue;
+            } else if (this.currTokenIs(TokenType.RBRACE)) {
+                properties.push(property);
+                continue;
+            }
+
+            if (!this.currTokenIs(TokenType.COLON)) {
+                this.errors.push(`Expected colon following Object literal key, but found ${this.peekToken.type}`);
+                return null;
+            }
+
+            this.nextToken();
+            property.value = this.parseExpression() as ast.Expression;
+            properties.push(property);
+
+            // Move past value IDENT token
+            this.nextToken();
+
+            if (this.currTokenIs(TokenType.COMMA)) {
+                if (this.expectPeek(TokenType.RBRACE)) {
+                    
+                }
+            }
+        }
+
+
+        if (!this.currTokenIs(TokenType.RBRACE)) {
+            this.errors.push(`Object literal missing closing brace`);
+            return null;
+        }
+
+        return ast.objectLiteral(properties, {
+            start,
+            end: this.currToken.position.end
+        });
+    }
 
     private parsePrefixExpression() {
         const start = this.currToken.position.start;
@@ -308,9 +349,27 @@ export class Parser implements Parser {
         );
     }
 
+    /*
+    private expect(t: TokenType) {
+        if (this.currTokenIs(t)) {
+            this.nextToken();
+            return this.currToken;
+        } else {
+            this.errors.push(`
+                Expected next token to be ${tokenTypeToString(t)},
+                 but got ${tokenTypeToString(this.peekToken.type)} instead
+            `);
+            return null;
+        }
+    }
+
+    */
 
     private expectPeek(t: TokenType) {
         if (this.peekTokenIs(t)) {
+            console.log('Expected and found ', t);
+            console.log('so moving from currToken ', this.currToken);
+            console.log('to peek Token ', this.peekToken);
             this.nextToken();
             return true;
         } else {
@@ -328,7 +387,7 @@ export class Parser implements Parser {
     }
 
     /*
-    private peekError(t: TokenType) {
+    private expectError(t: TokenType) {
         const errorMsg = `Expected next token to be ${tokenTypeToString(t)}, but got ${tokenTypeToString(this.peekToken.type)} instead`;
         this.errors.push(errorMsg);
     }

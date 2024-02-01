@@ -9,7 +9,7 @@ type Props = PropsWithChildren<{
 
 export default function Expander({ title, expanded, toggleExpanded, children }: Props) {
 
-    let indicator = { color: colors.green, symbol: "+" };
+    const indicator = { color: colors.green, symbol: "+" };
 
     if (expanded) {
         indicator.color = colors.red;

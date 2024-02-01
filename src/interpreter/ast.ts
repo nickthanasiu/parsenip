@@ -14,7 +14,7 @@ export type Expression =
     // Literals
     | IntegerLiteral
     | BooleanLiteral
-    //| Object
+    | ObjectLiteral
 ;
 
 
@@ -59,10 +59,20 @@ export function booleanLiteral(value: boolean, position: Position): BooleanLiter
     }
 }
 
-export interface Property {
+export interface Property extends Position {
     type: "property",
-    key: string,
+    key: Identifier,
     value?: Expression
+}
+
+export function property(key: Identifier, value?: Expression): Property {
+    return {
+        type: "property",
+        start: key.start,
+        end: value?.end ?? key.end,
+        key,
+        value,
+    }
 }
 
 export interface ObjectLiteral extends Position {
@@ -70,8 +80,12 @@ export interface ObjectLiteral extends Position {
     properties: Property[]
 }
 
-export function objectLiteral() {
-    return;
+export function objectLiteral(properties: Property[], position: Position): ObjectLiteral {
+    return {
+        type: "objectLiteral",
+        ...position,
+        properties,
+    }
 }
 
 export interface PrefixExpression extends Position {

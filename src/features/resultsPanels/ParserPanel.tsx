@@ -26,7 +26,7 @@ function ParserErrors({ errors }: { errors: string[] }) {
         <div style={{ backgroundColor: '#f09999' }}>
             <h3>Found the following errors while parsing: </h3>
 
-            {errors.map(err => <p>{err}</p>)}
+            {errors.map((err, i) => <p key={err + i}>{err}</p>)}
         </div>
     );
 }
