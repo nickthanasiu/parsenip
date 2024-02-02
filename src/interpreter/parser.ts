@@ -42,7 +42,8 @@ export class Parser implements Parser {
         [TokenType.MINUS, this.parsePrefixExpression],
         [TokenType.TRUE, this.parseBooleanLiteral],
         [TokenType.FALSE, this.parseBooleanLiteral],
-        [TokenType.LBRACE, this.parseObjectExpression]
+        [TokenType.LBRACE, this.parseObjectExpression],
+        [TokenType.IF, this.parseIfExpression],
     ]);
 
     private infixParseFns = this.bindInfixParseFns([
@@ -322,6 +323,74 @@ export class Parser implements Parser {
         );
     }
 
+    private parseIfExpression() {
+
+        const start = this.currToken.position.start;
+
+        if (!this.expectPeek(TokenType.LPAREN)) {
+            this.errors.push(`Expected ( following "if" keyword`);
+            return null;
+        }
+
+        this.nextToken();
+        const condition = this.parseExpression() as ast.Expression;
+
+        if (!this.expectPeek(TokenType.RPAREN)) {
+            this.errors.push(`Expected ) following condition expresssion`);
+            return null;
+        }
+
+        if (!this.expectPeek(TokenType.LBRACE)) {
+            this.errors.push(`Expected { to begin block statement`);
+            return null;
+        }
+
+        const consequence = this.parseBlockStatement();
+
+        if (this.expectPeek(TokenType.ELSE)) {
+            
+            if (!this.expectPeek(TokenType.LBRACE)) {
+                this.errors.push(`Expected { to begin block statement`);
+                return null;
+            }
+
+            const alternative = this.parseBlockStatement();
+
+            return ast.ifExpression(
+                condition,
+                consequence,
+                { start, end: this.currToken.position.end },
+                alternative,
+            );
+        }
+
+        return ast.ifExpression(condition, consequence, { start, end: this.currToken.position.end })
+    }
+
+    private parseBlockStatement() {
+
+        const start = this.currToken.position.start;
+
+        const blockStatements: ast.Statement[] = [];
+
+        this.nextToken();
+
+        while (!this.currTokenIs(TokenType.RBRACE) && !this.currTokenIs(TokenType.EOF)) {
+            const stmt = this.parseStatement();
+
+            if (stmt) {
+                blockStatements.push(stmt);
+            }
+
+            this.nextToken();
+        }
+
+
+        return ast.blockStatement(blockStatements, {
+            start, end: this.currToken.position.end,
+        })
+    }
+
     private parseIdentifier() {
         return ast.identifier(
             this.currToken.literal,
@@ -367,9 +436,6 @@ export class Parser implements Parser {
 
     private expectPeek(t: TokenType) {
         if (this.peekTokenIs(t)) {
-            console.log('Expected and found ', t);
-            console.log('so moving from currToken ', this.currToken);
-            console.log('to peek Token ', this.peekToken);
             this.nextToken();
             return true;
         } else {

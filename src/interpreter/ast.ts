@@ -10,6 +10,7 @@ export type Expression =
     | Identifier
     | PrefixExpression
     | InfixExpression
+    | IfExpression
 
     // Literals
     | IntegerLiteral
@@ -120,6 +121,30 @@ export function infixExpression(left: Expression, operator: string, right: Expre
     };
 }
 
+export interface IfExpression extends Position {
+    type: "ifExpression";
+    condition: Expression;
+    consequence: BlockStatement;
+    alternative?: BlockStatement;
+}
+
+export function ifExpression(
+    condition: Expression,
+    consequence: BlockStatement,
+    position: Position,
+    alternative?: BlockStatement,
+): IfExpression {
+  
+
+    return {
+        type: "ifExpression",
+        ...position,
+        condition,
+        consequence,
+        alternative,
+    }
+}
+
 ////////////////
 // Statements
 ////////////////
@@ -128,6 +153,7 @@ export type Statement =
     | VariableDeclarationStatement
     | ReturnStatement
     | ExpressionStatement
+    | BlockStatement
 ;
 
 export interface VariableDeclarationStatement extends Position {
@@ -176,6 +202,19 @@ export function expressionStatement(expression: Expression, position: Position):
         ...position,
         expression
     }
+}
+
+export interface BlockStatement extends Position {
+    type: "blockStatement";
+    statements: Statement[];
+}
+
+export function blockStatement(statements: Statement[], position: Position): BlockStatement {
+    return {
+        type: "blockStatement",
+        ...position,
+        statements
+    };
 }
 
 ////////////////
