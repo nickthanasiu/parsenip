@@ -19,8 +19,6 @@ export type Expression =
     | ObjectLiteral
 ;
 
-
-
 export interface Identifier extends Position {
     type: "identifier",
     value: string;
@@ -159,13 +157,14 @@ export const functionExpression = (args: ASTNodeParams<FunctionExpression>): Fun
 ////////////////
 
 export type Statement =
-    | VariableDeclarationStatement
+    | VariableDeclaration
+    | FunctionDeclaration
     | ReturnStatement
     | ExpressionStatement
     | BlockStatement
 ;
 
-export interface VariableDeclarationStatement extends Position {
+export interface VariableDeclaration extends Position {
     type: "variableDeclaration";
     constant: boolean;
     identifier: Identifier;
@@ -177,7 +176,7 @@ export function variableDeclaration(
     identifier: Identifier,
     position: Position,
     value?: Expression | null,
-): VariableDeclarationStatement {
+): VariableDeclaration {
     return {
         type: "variableDeclaration",
         ...position,
@@ -187,10 +186,21 @@ export function variableDeclaration(
     }
 }
 
-export interface FunctionDeclaration {
+export interface FunctionDeclaration extends Position {
     type: "functionDeclaration",
-    
+    identifier: Identifier,
+    parameters: Identifier[],
+    body: BlockStatement
 }
+
+export const functionDeclaration = (args: ASTNodeParams<FunctionDeclaration>): FunctionDeclaration => ({
+    type: "functionDeclaration",
+    identifier: args.identifier,
+    parameters: args.parameters,
+    body: args.body,
+    start: args.start,
+    end: args.end,
+});
 
 export interface ReturnStatement extends Position {
     type: "returnStatement";

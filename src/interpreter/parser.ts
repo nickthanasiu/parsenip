@@ -97,6 +97,8 @@ export class Parser implements Parser {
             case TokenType.LET:
             case TokenType.CONST:
                 return this.parseVariableDeclaration();
+            case TokenType.FUNCTION:
+                return this.parseFunctionDeclaration();
             case TokenType.RETURN:
                 return this.parseReturnStatement();
             default:
@@ -158,6 +160,39 @@ export class Parser implements Parser {
             { start, end: this.currToken.position.end },
             value,
         );
+    }
+
+    private parseFunctionDeclaration() {
+        const { start } = this.currToken.position;
+
+        if (!this.expectPeek(TokenType.IDENT)) {
+            this.errors.push(`Expected identifier following 'function' keyword`);
+            return null;
+        }
+
+        const identifier = ast.identifier(this.currToken.literal, this.currToken.position);
+
+        if (!this.expectPeek(TokenType.LPAREN)) {
+            this.errors.push(`Expected ( following identifier in function declaration`);
+            return null;
+        }
+
+        const parameters = this.parseFunctionParameters();
+
+        if (!this.expectPeek(TokenType.LBRACE)) {
+            this.errors.push(`Expected { to follow paramters in function declaration`)
+            return null;
+        }
+
+        const body = this.parseBlockStatement();
+
+        return ast.functionDeclaration({
+            identifier,
+            parameters,
+            body,
+            start,
+            end: this.currToken.position.end
+        });
     }
 
     private parseReturnStatement() {
