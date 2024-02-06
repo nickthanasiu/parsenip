@@ -45,6 +45,7 @@ export class Parser implements Parser {
         [TokenType.TRUE, this.parseBooleanLiteral],
         [TokenType.FALSE, this.parseBooleanLiteral],
         [TokenType.LBRACE, this.parseObjectExpression],
+        [TokenType.LBRACKET, this.parseArrayLiteral],
         [TokenType.IF, this.parseIfExpression],
         [TokenType.FUNCTION, this.parseFunctionLiteral],
     ]);
@@ -314,6 +315,43 @@ export class Parser implements Parser {
         }
 
         return ast.objectLiteral(properties, {
+            start,
+            end: this.currToken.position.end
+        });
+    }
+
+
+    // TODO: should we handle trailing commas?
+    private parseArrayLiteral() {
+        const { start } = this.currToken.position;
+
+        const elements: ast.Expression[] = [];
+        
+        if (this.peekTokenIs(TokenType.RBRACKET)) {
+            this.nextToken();
+            return ast.arrayLiteral({
+                elements,
+                start,
+                end: this.currToken.position.end
+            });
+        }
+
+        this.nextToken();
+        elements.push(this.parseExpression() as ast.Expression);
+        
+        while (this.peekTokenIs(TokenType.COMMA)) {
+            this.nextToken();
+            this.nextToken();
+            elements.push(this.parseExpression() as ast.Expression);
+        }
+        
+        if (!this.expectPeek(TokenType.RBRACKET)) {
+            this.errors.push(`Expected array literal to have closing bracket`);
+            return null;
+        }
+
+        return ast.arrayLiteral({
+            elements,
             start,
             end: this.currToken.position.end
         });

@@ -19,6 +19,7 @@ export type Expression =
     | IntegerLiteral
     | BooleanLiteral
     | ObjectLiteral
+    | ArrayLiteral
 ;
 
 export interface Identifier extends Position {
@@ -100,6 +101,17 @@ export function objectLiteral(properties: Property[], position: Position): Objec
         properties,
     }
 }
+
+export interface ArrayLiteral extends Position {
+    type: "arrayLiteral";
+    elements: Expression[];
+}
+
+export const arrayLiteral = (args: ASTNodeParams<ArrayLiteral>): ArrayLiteral => ({
+    type: "arrayLiteral",
+    elements: args.elements,
+    ...positionFromArgs(args)
+});
 
 export interface PrefixExpression extends Position {
     type: "prefixExpression";
