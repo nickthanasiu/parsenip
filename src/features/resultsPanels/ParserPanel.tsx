@@ -9,14 +9,11 @@ export default function ParserPanel({ input, cursorPosition }: { input: string; 
         <div>
             {errors 
                 ? <ParserErrors errors={errors} />
-                : program.body.map(statement => 
-                    <div>
-                        <ASTNode 
-                            node={statement}
-                            cursorPosition={cursorPosition}
-                        />
-                    </div>
-            )}
+                : <ASTNode 
+                    node={program}
+                    cursorPosition={cursorPosition}
+                />
+            }
         </div>
     );
 }
@@ -26,7 +23,7 @@ function ParserErrors({ errors }: { errors: string[] }) {
         <div style={{ backgroundColor: '#f09999' }}>
             <h3>Found the following errors while parsing: </h3>
 
-            {errors.map(err => <p>{err}</p>)}
+            {errors.map((err, i) => <p key={err + i}>{err}</p>)}
         </div>
     );
 }

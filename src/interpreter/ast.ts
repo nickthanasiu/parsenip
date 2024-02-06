@@ -10,11 +10,12 @@ export type Expression =
     | Identifier
     | PrefixExpression
     | InfixExpression
+    | IfExpression
 
     // Literals
     | IntegerLiteral
     | BooleanLiteral
-    //| Object
+    | ObjectLiteral
 ;
 
 
@@ -59,10 +60,20 @@ export function booleanLiteral(value: boolean, position: Position): BooleanLiter
     }
 }
 
-export interface Property {
+export interface Property extends Position {
     type: "property",
-    key: string,
+    key: Identifier,
     value?: Expression
+}
+
+export function property(key: Identifier, value?: Expression): Property {
+    return {
+        type: "property",
+        start: key.start,
+        end: value?.end ?? key.end,
+        key,
+        value,
+    }
 }
 
 export interface ObjectLiteral extends Position {
@@ -70,8 +81,12 @@ export interface ObjectLiteral extends Position {
     properties: Property[]
 }
 
-export function objectLiteral() {
-    return;
+export function objectLiteral(properties: Property[], position: Position): ObjectLiteral {
+    return {
+        type: "objectLiteral",
+        ...position,
+        properties,
+    }
 }
 
 export interface PrefixExpression extends Position {
@@ -106,6 +121,24 @@ export function infixExpression(left: Expression, operator: string, right: Expre
     };
 }
 
+type ASTNodeParams<T> = Omit<T, "type">;
+
+export interface IfExpression extends Position {
+    type: "ifExpression";
+    condition: Expression;
+    consequence: BlockStatement;
+    alternative?: BlockStatement;
+}
+
+export const ifExpression = (args: ASTNodeParams<IfExpression>): IfExpression => ({
+    type: "ifExpression",
+    condition: args.condition,
+    consequence: args.consequence,
+    alternative: args.alternative,
+    start: args.start,
+    end: args.end
+});
+
 ////////////////
 // Statements
 ////////////////
@@ -114,6 +147,7 @@ export type Statement =
     | VariableDeclarationStatement
     | ReturnStatement
     | ExpressionStatement
+    | BlockStatement
 ;
 
 export interface VariableDeclarationStatement extends Position {
@@ -162,6 +196,19 @@ export function expressionStatement(expression: Expression, position: Position):
         ...position,
         expression
     }
+}
+
+export interface BlockStatement extends Position {
+    type: "blockStatement";
+    statements: Statement[];
+}
+
+export function blockStatement(statements: Statement[], position: Position): BlockStatement {
+    return {
+        type: "blockStatement",
+        ...position,
+        statements
+    };
 }
 
 ////////////////

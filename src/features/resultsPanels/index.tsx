@@ -51,7 +51,6 @@ export default function ResultsPanels(props: Props) {
 
     return (
         <div>
-            <div>Cursor Position: {props.cursorPosition}</div>
             <div style={tabsStyles}>
                 {tabs.map(t => 
                     <Tab 

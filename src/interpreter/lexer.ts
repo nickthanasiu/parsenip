@@ -80,6 +80,9 @@ export class Lexer implements Lexer {
       case ",":
         token = newToken(TokenType.COMMA, ",", { start, end: this.position });
         break;
+      case ":":
+        token = newToken(TokenType.COLON, ":", { start, end: this.position });
+        break;
       case ";":
         token = newToken(TokenType.SEMICOLON, ";", { start, end: this.position });
         break;

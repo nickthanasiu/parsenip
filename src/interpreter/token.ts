@@ -1,43 +1,44 @@
 
 export enum TokenType {
-    EOF,
-    ILLEGAL,
+    EOF = "EOF",
+    ILLEGAL = "ILLEGAL",
   
     // Identifiers and literals
-    IDENT, // foobar, add, x, y, etc.
-    INT, // 12345
+    IDENT = "IDENT", // foobar, add, x, y, etc.
+    INT = "INT", // 12345
   
     // Operators
-    ASSIGN,
-    PLUS,
-    MINUS,
-    ASTERISK,
-    SLASH,
-    BANG,
-    EQ,
-    NOT_EQ,
-    LT,
-    GT,
+    ASSIGN = "ASSIGN",
+    PLUS = "PLUS",
+    MINUS = "MINUS",
+    ASTERISK = "ASTERISK",
+    SLASH = "SLASH",
+    BANG = "BANG",
+    EQ = "EQ",
+    NOT_EQ = "NOT_EQ",
+    LT = "LT",
+    GT = "GT",
   
     // Delimiters
-    COMMA,
-    SEMICOLON,
-    LPAREN,
-    RPAREN,
-    LBRACE,
-    RBRACE,
-    LBRACKET,
-    RBRACKET,
+    COMMA = "COMMA",
+    COLON = "COLON",
+    SEMICOLON = "SEMICOLON",
+    LPAREN = "LPAREN",
+    RPAREN  = "RPAREN",
+    LBRACE = "LBRACE",
+    RBRACE = "RBRACE",
+    LBRACKET = "LBRACKET",
+    RBRACKET = "RBRACKET",
   
     // Keywords
-    FUNCTION,
-    LET,
-    CONST,
-    RETURN,
-    IF,
-    ELSE,
-    TRUE,
-    FALSE,
+    FUNCTION = "FUNCTION",
+    LET = "LET",
+    CONST = "CONST",
+    RETURN = "RETURN",
+    IF = "IF",
+    ELSE = "ELSE",
+    TRUE = "TRUE",
+    FALSE = "FALSE",
   }
 
   export function tokenTypeToString(tt: TokenType) {

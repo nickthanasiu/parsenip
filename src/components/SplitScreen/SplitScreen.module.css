@@ -4,3 +4,11 @@
 
     display: grid;
 }
+
+.divider {
+    width: 5px;
+
+    &:hover {
+        cursor: col-resize;
+    }
+}
