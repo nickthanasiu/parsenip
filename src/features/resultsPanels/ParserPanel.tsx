@@ -9,14 +9,11 @@ export default function ParserPanel({ input, cursorPosition }: { input: string; 
         <div>
             {errors 
                 ? <ParserErrors errors={errors} />
-                : program.body.map(statement => 
-                    <div>
-                        <ASTNode 
-                            node={statement}
-                            cursorPosition={cursorPosition}
-                        />
-                    </div>
-            )}
+                : <ASTNode 
+                    node={program}
+                    cursorPosition={cursorPosition}
+                />
+            }
         </div>
     );
 }
