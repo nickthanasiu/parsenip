@@ -21,6 +21,7 @@ const precedences = new Map<TokenType, Precedence>([
     [TokenType.MINUS, Precedence.SUM],
     [TokenType.ASTERISK, Precedence.PRODUCT],
     [TokenType.SLASH, Precedence.PRODUCT],
+    [TokenType.LPAREN, Precedence.CALL],
 ]);
 
 type prefixParseFn = () => ast.Expression | null;
@@ -37,13 +38,16 @@ export class Parser implements Parser {
 
     private prefixParseFns = this.bindPrefixParseFns([
         [TokenType.IDENT, this.parseIdentifier],
+        [TokenType.STRING, this.parseStringLiteral],
         [TokenType.INT, this.parseIntegerLiteral],
         [TokenType.BANG, this.parsePrefixExpression],
         [TokenType.MINUS, this.parsePrefixExpression],
         [TokenType.TRUE, this.parseBooleanLiteral],
         [TokenType.FALSE, this.parseBooleanLiteral],
         [TokenType.LBRACE, this.parseObjectExpression],
+        [TokenType.LBRACKET, this.parseArrayLiteral],
         [TokenType.IF, this.parseIfExpression],
+        [TokenType.FUNCTION, this.parseFunctionLiteral],
     ]);
 
     private infixParseFns = this.bindInfixParseFns([
@@ -55,6 +59,7 @@ export class Parser implements Parser {
         [TokenType.LT, this.parseInfixExpression],
         [TokenType.EQ, this.parseInfixExpression],
         [TokenType.NOT_EQ, this.parseInfixExpression],
+        [TokenType.LPAREN, this.parseCallExpression],
     ]);
 
     constructor(lexer: Lexer) {
@@ -96,6 +101,8 @@ export class Parser implements Parser {
             case TokenType.LET:
             case TokenType.CONST:
                 return this.parseVariableDeclaration();
+            case TokenType.FUNCTION:
+                return this.parseFunctionDeclaration();
             case TokenType.RETURN:
                 return this.parseReturnStatement();
             default:
@@ -157,6 +164,39 @@ export class Parser implements Parser {
             { start, end: this.currToken.position.end },
             value,
         );
+    }
+
+    private parseFunctionDeclaration() {
+        const { start } = this.currToken.position;
+
+        if (!this.expectPeek(TokenType.IDENT)) {
+            this.errors.push(`Expected identifier following 'function' keyword`);
+            return null;
+        }
+
+        const identifier = ast.identifier(this.currToken.literal, this.currToken.position);
+
+        if (!this.expectPeek(TokenType.LPAREN)) {
+            this.errors.push(`Expected ( following identifier in function declaration`);
+            return null;
+        }
+
+        const parameters = this.parseFunctionParameters();
+
+        if (!this.expectPeek(TokenType.LBRACE)) {
+            this.errors.push(`Expected { to follow paramters in function declaration`)
+            return null;
+        }
+
+        const body = this.parseBlockStatement();
+
+        return ast.functionDeclaration({
+            identifier,
+            parameters,
+            body,
+            start,
+            end: this.currToken.position.end
+        });
     }
 
     private parseReturnStatement() {
@@ -280,6 +320,43 @@ export class Parser implements Parser {
         });
     }
 
+
+    // TODO: should we handle trailing commas?
+    private parseArrayLiteral() {
+        const { start } = this.currToken.position;
+
+        const elements: ast.Expression[] = [];
+        
+        if (this.peekTokenIs(TokenType.RBRACKET)) {
+            this.nextToken();
+            return ast.arrayLiteral({
+                elements,
+                start,
+                end: this.currToken.position.end
+            });
+        }
+
+        this.nextToken();
+        elements.push(this.parseExpression() as ast.Expression);
+        
+        while (this.peekTokenIs(TokenType.COMMA)) {
+            this.nextToken();
+            this.nextToken();
+            elements.push(this.parseExpression() as ast.Expression);
+        }
+        
+        if (!this.expectPeek(TokenType.RBRACKET)) {
+            this.errors.push(`Expected array literal to have closing bracket`);
+            return null;
+        }
+
+        return ast.arrayLiteral({
+            elements,
+            start,
+            end: this.currToken.position.end
+        });
+    }
+
     private parsePrefixExpression() {
         const start = this.currToken.position.start;
         const prefixOperator = this.currToken.literal;
@@ -389,11 +466,92 @@ export class Parser implements Parser {
         })
     }
 
+    private parseFunctionLiteral() {
+        const { start } = this.currToken.position;
+
+        if (!this.expectPeek(TokenType.LPAREN)) {
+            this.errors.push(`Expected ( following 'function' keyword`);
+            return null;
+        }
+
+        const parameters = this.parseFunctionParameters();
+
+        if (!this.expectPeek(TokenType.LBRACE)) {
+            this.errors.push(`Expected {`); // TODO: Improve error message
+            return null;
+        }
+
+        const body = this.parseBlockStatement();
+
+        return ast.functionExpression({
+            parameters,
+            body,
+            start,
+            end: this.currToken.position.end
+        });
+    }
+
+    private parseFunctionParameters() {
+        const identifiers: ast.Identifier[] = [];
+
+        this.nextToken();
+
+        while (!this.currTokenIs(TokenType.RPAREN)) {
+            const ident = ast.identifier(this.currToken.literal, this.currToken.position);
+            identifiers.push(ident);
+            this.nextToken();
+
+            if (this.currTokenIs(TokenType.COMMA)) {
+                this.nextToken();
+            }
+        }
+
+        return identifiers;
+    }
+
     private parseIdentifier() {
         return ast.identifier(
             this.currToken.literal,
             this.currToken.position
         );
+    }
+
+    private parseCallExpression(fn: ast.Expression) {
+        const args = this.parseArguments();
+
+        return ast.callExpression({
+            function: fn,
+            arguments: args,
+            start: fn.start,
+            end: this.currToken.position.end
+        })
+    }
+
+    private parseArguments() {
+        const args: ast.Expression[] = [];
+
+        this.nextToken();
+
+        while (!this.currTokenIs(TokenType.RPAREN)) {
+            const arg = this.parseExpression() as ast.Expression;
+            args.push(arg);
+            this.nextToken();
+
+            if (this.currTokenIs(TokenType.COMMA)) {
+                this.nextToken();
+            }
+        }
+
+        return args;
+    }
+
+    private parseStringLiteral() {
+        const { literal, position } = this.currToken;
+
+        return ast.stringLiteral({
+            value: literal,
+            ...position
+        });
     }
 
     private parseIntegerLiteral() {

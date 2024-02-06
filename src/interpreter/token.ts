@@ -6,6 +6,7 @@ export enum TokenType {
     // Identifiers and literals
     IDENT = "IDENT", // foobar, add, x, y, etc.
     INT = "INT", // 12345
+    STRING = "STRING",
   
     // Operators
     ASSIGN = "ASSIGN",
@@ -67,7 +68,7 @@ export interface Position {
   }
   
   const keywords = new Map<string, TokenType>([
-    ["fn", TokenType.FUNCTION],
+    ["function", TokenType.FUNCTION],
     ["let", TokenType.LET],
     ["const", TokenType.CONST],
     ["return", TokenType.RETURN],

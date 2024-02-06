@@ -11,14 +11,16 @@ export type Expression =
     | PrefixExpression
     | InfixExpression
     | IfExpression
+    | FunctionExpression
+    | CallExpression
 
     // Literals
+    | StringLiteral
     | IntegerLiteral
     | BooleanLiteral
     | ObjectLiteral
+    | ArrayLiteral
 ;
-
-
 
 export interface Identifier extends Position {
     type: "identifier",
@@ -32,6 +34,17 @@ export function identifier(value: string, position: Position): Identifier {
         ...position,
     }
 }
+
+export interface StringLiteral extends Position {
+    type: "stringLiteral";
+    value: string;
+}
+
+export const stringLiteral = (args: ASTNodeParams<StringLiteral>): StringLiteral => ({
+    type: "stringLiteral",
+    value: args.value,
+    ...positionFromArgs(args)
+});
 
 export interface IntegerLiteral extends Position {
     type: "integerLiteral";
@@ -89,6 +102,17 @@ export function objectLiteral(properties: Property[], position: Position): Objec
     }
 }
 
+export interface ArrayLiteral extends Position {
+    type: "arrayLiteral";
+    elements: Expression[];
+}
+
+export const arrayLiteral = (args: ASTNodeParams<ArrayLiteral>): ArrayLiteral => ({
+    type: "arrayLiteral",
+    elements: args.elements,
+    ...positionFromArgs(args)
+});
+
 export interface PrefixExpression extends Position {
     type: "prefixExpression";
     operator: string;
@@ -139,18 +163,51 @@ export const ifExpression = (args: ASTNodeParams<IfExpression>): IfExpression =>
     end: args.end
 });
 
+export interface FunctionExpression extends Position {
+    type: "functionExpression";
+    parameters: Identifier[];
+    body: BlockStatement;
+}
+
+export const functionExpression = (args: ASTNodeParams<FunctionExpression>): FunctionExpression => ({
+    type: "functionExpression",
+    parameters: args.parameters,
+    body: args.body,
+    start: args.start,
+    end: args.end
+});
+
+export interface CallExpression extends Position {
+    type: "callExpression";
+    function: Expression;
+    arguments: Expression[];
+}
+
+function positionFromArgs(args: ASTNodeParams<Node>): Position {
+    const { start, end } = args;
+    return { start, end };
+}
+
+export const callExpression = (args: ASTNodeParams<CallExpression>): CallExpression => ({
+    type: "callExpression",
+    function: args.function,
+    arguments: args.arguments,
+    ...positionFromArgs(args)
+});
+
 ////////////////
 // Statements
 ////////////////
 
 export type Statement =
-    | VariableDeclarationStatement
+    | VariableDeclaration
+    | FunctionDeclaration
     | ReturnStatement
     | ExpressionStatement
     | BlockStatement
 ;
 
-export interface VariableDeclarationStatement extends Position {
+export interface VariableDeclaration extends Position {
     type: "variableDeclaration";
     constant: boolean;
     identifier: Identifier;
@@ -162,7 +219,7 @@ export function variableDeclaration(
     identifier: Identifier,
     position: Position,
     value?: Expression | null,
-): VariableDeclarationStatement {
+): VariableDeclaration {
     return {
         type: "variableDeclaration",
         ...position,
@@ -171,6 +228,22 @@ export function variableDeclaration(
         value,
     }
 }
+
+export interface FunctionDeclaration extends Position {
+    type: "functionDeclaration",
+    identifier: Identifier,
+    parameters: Identifier[],
+    body: BlockStatement
+}
+
+export const functionDeclaration = (args: ASTNodeParams<FunctionDeclaration>): FunctionDeclaration => ({
+    type: "functionDeclaration",
+    identifier: args.identifier,
+    parameters: args.parameters,
+    body: args.body,
+    start: args.start,
+    end: args.end,
+});
 
 export interface ReturnStatement extends Position {
     type: "returnStatement";
@@ -210,6 +283,8 @@ export function blockStatement(statements: Statement[], position: Position): Blo
         statements
     };
 }
+
+
 
 ////////////////
 // Program

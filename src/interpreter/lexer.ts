@@ -16,7 +16,7 @@ export class Lexer implements Lexer {
     this.readChar();
   }
 
-  public readChar() {
+  private readChar() {
 
     if (this.position >= this.input.length) {
       this.ch = "\0";
@@ -43,6 +43,10 @@ export class Lexer implements Lexer {
     let start = this.position - 1;
 
     switch (this.ch) {
+      case "\"": 
+        const stringVal = this.readString(start);
+        token = newToken(TokenType.STRING, stringVal, { start, end: this.position });
+        break;
       case "=":
         if (this.peekChar() === "=") {
           this.readChar();
@@ -61,7 +65,15 @@ export class Lexer implements Lexer {
         token = newToken(TokenType.ASTERISK, "*", { start, end: this.position });
         break;
       case "/":
-        token = newToken(TokenType.SLASH, "/", { start, end: this.position });
+        if (this.peekChar() === "/") {
+          this.skipSingleLineComment();
+          token = this.nextToken();
+        } else if (this.peekChar() === "*") {
+          this.skipMultiLineComment();
+          token = this.nextToken();
+        } else {
+          token = newToken(TokenType.SLASH, "/", { start, end: this.position });
+        }
         break;
       case "!":
         if (this.peekChar() === "=") {
@@ -142,8 +154,8 @@ export class Lexer implements Lexer {
     return lookupIdentifer(text, { start, end: this.position - 1 });
   }
 
-  readNumber() {
-    let start = this.position - 1;
+  private readNumber() {
+    const start = this.position - 1;
 
     while (this.isDigit(this.ch)) {
       this.readChar();
@@ -153,25 +165,66 @@ export class Lexer implements Lexer {
     return newToken(TokenType.INT, text, { start, end: this.position - 1 });
   }
 
-  skipWhitespace() {
+  private readString(start: number) {
+
+    this.readChar();
+
+    while (this.ch !== "\"" && !this.isEOF()) {
+      this.readChar();
+    }
+
+    return this.input.slice(start, this.position);
+  }
+
+  private skipSingleLineComment() {
+    while (!this.isNewlineChar(this.ch) && !this.isEOF()) {
+      this.readChar();
+    }
+  }
+
+  private skipMultiLineComment() {
+    const isEndOfComment = () =>
+      this.ch === "*" && this.peekChar() === "/";
+
+
+    while (!isEndOfComment() && !this.isEOF()) {
+      this.readChar();
+    }
+
+    /* Now that we've reached the end of the multi-line commnet
+     * let's skip ahead two characters, past \* and \/ 
+     */
+    this.readChar();
+    this.readChar();
+  }
+
+  // Tells us if we are the end of the file by checking for "end of file" character: "\0"
+  private isEOF() {
+    return this.ch === "\0";
+  }
+
+  private skipWhitespace() {
     const isWhitespace = (ch: string) =>
       ch === " "  ||
-      ch === "\n" ||
-      ch === "\r" ||
-      ch === "\t"
+      ch === "\t" ||
+      this.isNewlineChar(ch)
     ;
 
     while (isWhitespace(this.ch)) {
       this.readChar();
-    }    
+    }
   }
 
-  isLetter(char: string) {
+  private isNewlineChar(ch: string) {
+    return ch === "\n" || ch === "\r";
+  };
+
+  private isLetter(char: string) {
     return 'a' <= char && char <= 'z' 
       || 'A' <= char && char <= 'Z';
   }
 
-  isDigit(char: string) {
+  private isDigit(char: string) {
     return '0' <= char && char <= '9';
   }
 }
