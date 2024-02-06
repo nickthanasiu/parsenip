@@ -15,6 +15,7 @@ export type Expression =
     | CallExpression
 
     // Literals
+    | StringLiteral
     | IntegerLiteral
     | BooleanLiteral
     | ObjectLiteral
@@ -32,6 +33,17 @@ export function identifier(value: string, position: Position): Identifier {
         ...position,
     }
 }
+
+export interface StringLiteral extends Position {
+    type: "stringLiteral";
+    value: string;
+}
+
+export const stringLiteral = (args: ASTNodeParams<StringLiteral>): StringLiteral => ({
+    type: "stringLiteral",
+    value: args.value,
+    ...positionFromArgs(args)
+});
 
 export interface IntegerLiteral extends Position {
     type: "integerLiteral";

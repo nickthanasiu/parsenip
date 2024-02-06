@@ -38,6 +38,7 @@ export class Parser implements Parser {
 
     private prefixParseFns = this.bindPrefixParseFns([
         [TokenType.IDENT, this.parseIdentifier],
+        [TokenType.STRING, this.parseStringLiteral],
         [TokenType.INT, this.parseIntegerLiteral],
         [TokenType.BANG, this.parsePrefixExpression],
         [TokenType.MINUS, this.parsePrefixExpression],
@@ -504,6 +505,15 @@ export class Parser implements Parser {
         }
 
         return args;
+    }
+
+    private parseStringLiteral() {
+        const { literal, position } = this.currToken;
+
+        return ast.stringLiteral({
+            value: literal,
+            ...position
+        });
     }
 
     private parseIntegerLiteral() {
