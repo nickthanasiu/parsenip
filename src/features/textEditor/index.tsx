@@ -1,11 +1,11 @@
 import Editor from "@monaco-editor/react";
 import { Position, editor } from "monaco-editor";
-import { useState, Dispatch, SetStateAction, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 interface Props {
     initialValue: string;
     editorRef: React.MutableRefObject<editor.IStandaloneCodeEditor | undefined>;
-    setEditorInput: Dispatch<SetStateAction<string>>;
+    setEditorInput(input: string): void;
     updateCursorPosition: any;
 }
 

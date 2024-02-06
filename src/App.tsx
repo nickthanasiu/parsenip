@@ -8,12 +8,10 @@ import { Editor } from '@monaco-editor/react';
 
 type Editor = editor.IStandaloneCodeEditor;
 
+
+
 export default function App() {
-  const initialValue = 
-    `/*\n * Write code here and see how\n * the lexer and parser interpret it \n */\n\nconst x = 1;\nconst y = y;\n\nfunction add(a, b){\n  return a + b;\n}\n\nconst sum = add(x, y);`;
-  
-  //\n\nfn incr(num) {\n\tnum + 1;\n}\n\nlet six = incr(five);";
-  const [editorInput, setEditorInput] = useState(initialValue);
+  const [editorInput, setEditorInput] = useEditorInput();
 
   const editorRef = useRef<Editor>();
   const [cursorPosition, updateCursorPosition] = useCursorPosition(editorRef);
@@ -36,4 +34,23 @@ export default function App() {
   );
 }
 
+
+function useEditorInput() {
+  
+  const [editorInput, setEditorInput] = useState(loadState);
+
+  function loadState() {
+    const starterCode = 
+      `/*\n * Write code here and see how\n * the lexer and parser interpret it \n */\n\nconst x = 1;\nconst y = y;\n\nfunction add(a, b){\n  return a + b;\n}\n\nconst sum = add(x, y);`;
+
+    return localStorage.getItem('code') ?? starterCode;
+  }
+
+  function saveState(input: string) {
+    localStorage.setItem('code', input);
+    setEditorInput(input);
+  }
+
+  return [editorInput, saveState] as [string, (input: string) => void];
+}
 

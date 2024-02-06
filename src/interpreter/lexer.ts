@@ -188,7 +188,6 @@ export class Lexer implements Lexer {
 
 
     while (!isEndOfComment() && !this.isEOF()) {
-      console.log('reading comment ', this.ch);
       this.readChar();
     }
 
