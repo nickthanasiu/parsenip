@@ -65,7 +65,15 @@ export class Lexer implements Lexer {
         token = newToken(TokenType.ASTERISK, "*", { start, end: this.position });
         break;
       case "/":
-        token = newToken(TokenType.SLASH, "/", { start, end: this.position });
+        if (this.peekChar() === "/") {
+          this.skipSingleLineComment();
+          token = this.nextToken();
+        } else if (this.peekChar() === "*") {
+          this.skipMultiLineComment();
+          token = this.nextToken();
+        } else {
+          token = newToken(TokenType.SLASH, "/", { start, end: this.position });
+        }
         break;
       case "!":
         if (this.peekChar() === "=") {
@@ -161,25 +169,56 @@ export class Lexer implements Lexer {
 
     this.readChar();
 
-    while (this.ch !== "\"" && this.ch !== "\0") {
+    while (this.ch !== "\"" && !this.isEOF()) {
       this.readChar();
     }
 
     return this.input.slice(start, this.position);
   }
 
+  private skipSingleLineComment() {
+    while (!this.isNewlineChar(this.ch) && !this.isEOF()) {
+      this.readChar();
+    }
+  }
+
+  private skipMultiLineComment() {
+    const isEndOfComment = () =>
+      this.ch === "*" && this.peekChar() === "/";
+
+
+    while (!isEndOfComment() && !this.isEOF()) {
+      console.log('reading comment ', this.ch);
+      this.readChar();
+    }
+
+    /* Now that we've reached the end of the multi-line commnet
+     * let's skip ahead two characters, past \* and \/ 
+     */
+    this.readChar();
+    this.readChar();
+  }
+
+  // Tells us if we are the end of the file by checking for "end of file" character: "\0"
+  private isEOF() {
+    return this.ch === "\0";
+  }
+
   private skipWhitespace() {
     const isWhitespace = (ch: string) =>
       ch === " "  ||
-      ch === "\n" ||
-      ch === "\r" ||
-      ch === "\t"
+      ch === "\t" ||
+      this.isNewlineChar(ch)
     ;
 
     while (isWhitespace(this.ch)) {
       this.readChar();
-    }    
+    }
   }
+
+  private isNewlineChar(ch: string) {
+    return ch === "\n" || ch === "\r";
+  };
 
   private isLetter(char: string) {
     return 'a' <= char && char <= 'z' 
