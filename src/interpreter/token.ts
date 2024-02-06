@@ -67,7 +67,7 @@ export interface Position {
   }
   
   const keywords = new Map<string, TokenType>([
-    ["fn", TokenType.FUNCTION],
+    ["function", TokenType.FUNCTION],
     ["let", TokenType.LET],
     ["const", TokenType.CONST],
     ["return", TokenType.RETURN],

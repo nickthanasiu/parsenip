@@ -44,6 +44,7 @@ export class Parser implements Parser {
         [TokenType.FALSE, this.parseBooleanLiteral],
         [TokenType.LBRACE, this.parseObjectExpression],
         [TokenType.IF, this.parseIfExpression],
+        [TokenType.FUNCTION, this.parseFunctionLiteral],
     ]);
 
     private infixParseFns = this.bindInfixParseFns([
@@ -387,6 +388,49 @@ export class Parser implements Parser {
         return ast.blockStatement(blockStatements, {
             start, end: this.currToken.position.end,
         })
+    }
+
+    private parseFunctionLiteral() {
+        const { start } = this.currToken.position;
+
+        if (!this.expectPeek(TokenType.LPAREN)) {
+            this.errors.push(`Expected ( following 'function' keyword`);
+            return null;
+        }
+
+        const parameters = this.parseFunctionParameters();
+
+        if (!this.expectPeek(TokenType.LBRACE)) {
+            this.errors.push(`Expected {`); // TODO: Improve error message
+            return null;
+        }
+
+        const body = this.parseBlockStatement();
+
+        return ast.functionExpression({
+            parameters,
+            body,
+            start,
+            end: this.currToken.position.end
+        });
+    }
+
+    private parseFunctionParameters() {
+        const identifiers: ast.Identifier[] = [];
+
+        this.nextToken();
+
+        while (!this.currTokenIs(TokenType.RPAREN)) {
+            const ident = ast.identifier(this.currToken.literal, this.currToken.position);
+            identifiers.push(ident);
+            this.nextToken();
+
+            if (this.currTokenIs(TokenType.COMMA)) {
+                this.nextToken();
+            }
+        }
+
+        return identifiers;
     }
 
     private parseIdentifier() {
