@@ -346,6 +346,7 @@ export class Parser implements Parser {
         }
 
         const consequence = this.parseBlockStatement();
+        let alternative;
 
         if (this.expectPeek(TokenType.ELSE)) {
             
@@ -354,17 +355,16 @@ export class Parser implements Parser {
                 return null;
             }
 
-            const alternative = this.parseBlockStatement();
-
-            return ast.ifExpression(
-                condition,
-                consequence,
-                { start, end: this.currToken.position.end },
-                alternative,
-            );
+            alternative = this.parseBlockStatement();
         }
 
-        return ast.ifExpression(condition, consequence, { start, end: this.currToken.position.end })
+        return ast.ifExpression({
+            condition,
+            consequence,
+            alternative,
+            start,
+            end: this.currToken.position.end
+        });
     }
 
     private parseBlockStatement() {

@@ -121,6 +121,8 @@ export function infixExpression(left: Expression, operator: string, right: Expre
     };
 }
 
+type ASTNodeParams<T> = Omit<T, "type">;
+
 export interface IfExpression extends Position {
     type: "ifExpression";
     condition: Expression;
@@ -128,22 +130,14 @@ export interface IfExpression extends Position {
     alternative?: BlockStatement;
 }
 
-export function ifExpression(
-    condition: Expression,
-    consequence: BlockStatement,
-    position: Position,
-    alternative?: BlockStatement,
-): IfExpression {
-  
-
-    return {
-        type: "ifExpression",
-        ...position,
-        condition,
-        consequence,
-        alternative,
-    }
-}
+export const ifExpression = (args: ASTNodeParams<IfExpression>): IfExpression => ({
+    type: "ifExpression",
+    condition: args.condition,
+    consequence: args.consequence,
+    alternative: args.alternative,
+    start: args.start,
+    end: args.end
+});
 
 ////////////////
 // Statements
