@@ -16,7 +16,7 @@ export class Lexer implements Lexer {
     this.readChar();
   }
 
-  private readChar() {
+  public readChar() {
 
     if (this.position >= this.input.length) {
       this.ch = "\0";
