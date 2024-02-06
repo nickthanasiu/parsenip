@@ -21,6 +21,7 @@ const precedences = new Map<TokenType, Precedence>([
     [TokenType.MINUS, Precedence.SUM],
     [TokenType.ASTERISK, Precedence.PRODUCT],
     [TokenType.SLASH, Precedence.PRODUCT],
+    [TokenType.LPAREN, Precedence.CALL],
 ]);
 
 type prefixParseFn = () => ast.Expression | null;
@@ -56,6 +57,7 @@ export class Parser implements Parser {
         [TokenType.LT, this.parseInfixExpression],
         [TokenType.EQ, this.parseInfixExpression],
         [TokenType.NOT_EQ, this.parseInfixExpression],
+        [TokenType.LPAREN, this.parseCallExpression],
     ]);
 
     constructor(lexer: Lexer) {
@@ -473,6 +475,35 @@ export class Parser implements Parser {
             this.currToken.literal,
             this.currToken.position
         );
+    }
+
+    private parseCallExpression(fn: ast.Expression) {
+        const args = this.parseArguments();
+
+        return ast.callExpression({
+            function: fn,
+            arguments: args,
+            start: fn.start,
+            end: this.currToken.position.end
+        })
+    }
+
+    private parseArguments() {
+        const args: ast.Expression[] = [];
+
+        this.nextToken();
+
+        while (!this.currTokenIs(TokenType.RPAREN)) {
+            const arg = this.parseExpression() as ast.Expression;
+            args.push(arg);
+            this.nextToken();
+
+            if (this.currTokenIs(TokenType.COMMA)) {
+                this.nextToken();
+            }
+        }
+
+        return args;
     }
 
     private parseIntegerLiteral() {

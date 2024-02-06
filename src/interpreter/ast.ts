@@ -12,6 +12,7 @@ export type Expression =
     | InfixExpression
     | IfExpression
     | FunctionExpression
+    | CallExpression
 
     // Literals
     | IntegerLiteral
@@ -139,7 +140,7 @@ export const ifExpression = (args: ASTNodeParams<IfExpression>): IfExpression =>
 });
 
 export interface FunctionExpression extends Position {
-    type:"functionExpression";
+    type: "functionExpression";
     parameters: Identifier[];
     body: BlockStatement;
 }
@@ -150,6 +151,24 @@ export const functionExpression = (args: ASTNodeParams<FunctionExpression>): Fun
     body: args.body,
     start: args.start,
     end: args.end
+});
+
+export interface CallExpression extends Position {
+    type: "callExpression";
+    function: Expression;
+    arguments: Expression[];
+}
+
+function positionFromArgs(args: ASTNodeParams<Node>): Position {
+    const { start, end } = args;
+    return { start, end };
+}
+
+export const callExpression = (args: ASTNodeParams<CallExpression>): CallExpression => ({
+    type: "callExpression",
+    function: args.function,
+    arguments: args.arguments,
+    ...positionFromArgs(args)
 });
 
 ////////////////
