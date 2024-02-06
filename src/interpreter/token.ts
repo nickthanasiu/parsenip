@@ -6,6 +6,7 @@ export enum TokenType {
     // Identifiers and literals
     IDENT = "IDENT", // foobar, add, x, y, etc.
     INT = "INT", // 12345
+    STRING = "STRING",
   
     // Operators
     ASSIGN = "ASSIGN",

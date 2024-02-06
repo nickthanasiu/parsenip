@@ -16,7 +16,7 @@ export class Lexer implements Lexer {
     this.readChar();
   }
 
-  public readChar() {
+  private readChar() {
 
     if (this.position >= this.input.length) {
       this.ch = "\0";
@@ -43,6 +43,10 @@ export class Lexer implements Lexer {
     let start = this.position - 1;
 
     switch (this.ch) {
+      case "\"": 
+        const stringVal = this.readString(start);
+        token = newToken(TokenType.STRING, stringVal, { start, end: this.position });
+        break;
       case "=":
         if (this.peekChar() === "=") {
           this.readChar();
@@ -142,8 +146,8 @@ export class Lexer implements Lexer {
     return lookupIdentifer(text, { start, end: this.position - 1 });
   }
 
-  readNumber() {
-    let start = this.position - 1;
+  private readNumber() {
+    const start = this.position - 1;
 
     while (this.isDigit(this.ch)) {
       this.readChar();
@@ -153,7 +157,18 @@ export class Lexer implements Lexer {
     return newToken(TokenType.INT, text, { start, end: this.position - 1 });
   }
 
-  skipWhitespace() {
+  private readString(start: number) {
+
+    this.readChar();
+
+    while (this.ch !== "\"" && this.ch !== "\0") {
+      this.readChar();
+    }
+
+    return this.input.slice(start, this.position);
+  }
+
+  private skipWhitespace() {
     const isWhitespace = (ch: string) =>
       ch === " "  ||
       ch === "\n" ||
@@ -166,12 +181,12 @@ export class Lexer implements Lexer {
     }    
   }
 
-  isLetter(char: string) {
+  private isLetter(char: string) {
     return 'a' <= char && char <= 'z' 
       || 'A' <= char && char <= 'Z';
   }
 
-  isDigit(char: string) {
+  private isDigit(char: string) {
     return '0' <= char && char <= '9';
   }
 }
