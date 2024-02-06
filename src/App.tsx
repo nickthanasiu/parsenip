@@ -10,12 +10,7 @@ type Editor = editor.IStandaloneCodeEditor;
 
 export default function App() {
   const initialValue = 
-    `let x = true;
-    if (x) {
-      return 1;
-    } else {
-      return 0;
-    }`;
+    `/*\n * Write code here and see how\n * the lexer and parser interpret it \n */\n\nconst x = 1;\nconst y = y;\n\nfunction add(a, b){\n  return a + b;\n}\n\nconst sum = add(x, y);`;
   
   //\n\nfn incr(num) {\n\tnum + 1;\n}\n\nlet six = incr(five);";
   const [editorInput, setEditorInput] = useState(initialValue);
