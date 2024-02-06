@@ -146,19 +146,17 @@ export class Parser implements Parser {
 
         const value = this.parseExpression(Precedence.LOWEST);
 
-        const declaration = ast.variableDeclaration(
-            isConstant,
-            identifier,
-            { start, end: this.currToken.position.end },
-            value,
-        );
-
         if (!this.expectPeek(TokenType.SEMICOLON)) {
             this.errors.push(`Variable declaration statement must end with semicolon`);
             return null;
         }
 
-        return declaration;
+        return ast.variableDeclaration(
+            isConstant,
+            identifier,
+            { start, end: this.currToken.position.end },
+            value,
+        );
     }
 
     private parseReturnStatement() {
