@@ -25,6 +25,9 @@ export default function App() {
   
   return (
     <div className="app">
+      <header style={{ paddingLeft: '20px', height: '35px', backgroundColor: 'lightgrey', display: 'flex', alignItems: 'center' }}>
+        <h3 style={{ margin: 0 }}>Browser Interpreter</h3>
+      </header>
       <SplitScreen>
         <TextEditor 
           initialValue={editorInput}
