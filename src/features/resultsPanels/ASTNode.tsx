@@ -57,7 +57,7 @@ export default function ASTNode({ node: currNode, cursorPosition }: Props) {
     const styles = {
         paddingLeft: '10px',
         marginBottom: '0px',
-        backgroundColor: highlighted ? 'yellow': '',
+        backgroundColor: highlighted ? '#f5f5d6': '',
     };
 
     return (

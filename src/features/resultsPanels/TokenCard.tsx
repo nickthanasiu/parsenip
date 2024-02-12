@@ -7,7 +7,7 @@ interface Props {
 }
 
 export default function TokenCard({ token, highlighted }: Props) {
-    const { type, literal, position } = token;
+    const { type, literal } = token;
 
     const tokenColor =
         type === TokenType.ILLEGAL
@@ -26,7 +26,7 @@ export default function TokenCard({ token, highlighted }: Props) {
         width: 'auto',
         borderColor: tokenColor,
         color: tokenColor,
-        backgroundColor: highlighted ? 'yellow' : '',
+        backgroundColor: highlighted ? '#f5f5d6' : '',
     };
 
     const keyColor = isIllegal ? colors.red : colors.gold;
@@ -43,7 +43,7 @@ export default function TokenCard({ token, highlighted }: Props) {
                 <span style={{ color: valueColor }}>{literal}</span>
             </div>
 
-            <div>
+            {/*<div>
                 <span style={{ color: keyColor }}>start: </span>
                 <span style={{ color: valueColor }}>{position.start}</span>
             </div>
@@ -51,7 +51,7 @@ export default function TokenCard({ token, highlighted }: Props) {
             <div>
                 <span style={{ color: keyColor }}>end: </span>
                 <span style={{ color: valueColor }}>{position.end}</span>
-            </div>
+            </div>*/}
         </div>
     );
 }

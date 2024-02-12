@@ -6,9 +6,10 @@
 }
 
 .divider {
-    width: 5px;
+    width: 3px;
 
     &:hover {
         cursor: col-resize;
+        background-color: var(--blue);
     }
 }
