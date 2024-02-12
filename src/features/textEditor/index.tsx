@@ -46,7 +46,7 @@ export default function TextEditor({ initialValue, editorRef, setEditorInput, up
     const options = {
         height: '100vh',
         width: '100%',
-        theme: 'vs-dark',
+        theme: 'vs-light',
         value: initialValue,
         onMount: handleEditorMount,
         onChange: handleChange,

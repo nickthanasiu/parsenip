@@ -29,7 +29,10 @@ export default function SplitScreen({ children: [leftPanel, rightPanel] }: Props
             onMouseMove={mouseMoveHandler}
         >
             {leftPanel}
-            <div className={styles.divider} onMouseDown={() => setDragging(true)} ></div>
+            <div 
+                className={styles.divider}
+                onMouseDown={() => setDragging(true)}
+            />
             {rightPanel}
         </div>
     );
