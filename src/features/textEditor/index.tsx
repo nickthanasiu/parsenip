@@ -1,6 +1,6 @@
 import Editor from "@monaco-editor/react";
-import { Position, editor } from "monaco-editor";
-import { useState, useEffect } from "react";
+import { editor } from "monaco-editor";
+import { useEffect, useCallback } from "react";
 
 interface Props {
     initialValue: string;
@@ -11,13 +11,26 @@ interface Props {
 
 export default function TextEditor({ initialValue, editorRef, setEditorInput, updateCursorPosition }: Props) {
 
+    const handleKeyUp = useCallback(({ key }: KeyboardEvent) => {
+        switch (key) {
+            case 'ArrowUp':
+            case 'ArrowDown':
+            case 'ArrowLeft':
+            case 'ArrowRight':
+                updateCursorPosition();
+                return;
+            default:
+                return;
+        }
+    }, []);
+
     useEffect(() => {
         document.addEventListener('keyup', handleKeyUp);
 
         return () => {
             document.removeEventListener('keyup', handleKeyUp);
         }
-    }, []);
+    }, [handleKeyUp]);
 
 
     function handleEditorMount(editor: editor.IStandaloneCodeEditor) {
@@ -29,25 +42,17 @@ export default function TextEditor({ initialValue, editorRef, setEditorInput, up
         updateCursorPosition();
     }
 
-
-    function handleKeyUp({ key }: KeyboardEvent) {
-        switch (key) {
-            case 'ArrowUp':
-            case 'ArrowDown':
-            case 'ArrowLeft':
-            case 'ArrowRight':
-                updateCursorPosition();
-                return;
-            default:
-                return;
-        }
-    }
-
     const options = {
         height: '100vh',
         width: '100%',
-        theme: 'vs-light',
+        theme: 'vs-dark',
+        language: 'javascript',
         value: initialValue,
+        options: {
+            wordBasedSuggestions: true,
+            wordBasedSuggestionsOnlySameLanguage: true,
+            'semanticHighlighting.enabled': true 
+        },
         onMount: handleEditorMount,
         onChange: handleChange,
     };
@@ -59,20 +64,3 @@ export default function TextEditor({ initialValue, editorRef, setEditorInput, up
     );
 }
 
-export function useCursorPosition(editorRef: React.MutableRefObject<editor.IStandaloneCodeEditor | undefined>) {
-
-    const [cursorPosition, setPosition] = useState(0);
-
-    function updateCursorPosition() {
-        const editor = editorRef.current;
-
-        if (editor) {
-            const cursorPosition = editor?.getModel()?.getOffsetAt(editor.getPosition() as Position);
-            if (cursorPosition) {
-                setPosition(cursorPosition);
-            }
-        }
-    }
-
-    return [cursorPosition, updateCursorPosition] as [number, typeof updateCursorPosition];
-}

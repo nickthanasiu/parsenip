@@ -1,4 +1,4 @@
-import { Token, TokenType, newToken, lookupIdentifer } from "./token";
+import { Token, TokenType, newToken, lookupIdentifer, Position } from "./token";
 
 export interface Lexer {
   ch: string;
@@ -43,7 +43,8 @@ export class Lexer implements Lexer {
     let start = this.position - 1;
 
     switch (this.ch) {
-      case "\"": 
+      case "\"":
+      case "'":
         const stringVal = this.readString(start);
         token = newToken(TokenType.STRING, stringVal, { start, end: this.position });
         break;
@@ -84,10 +85,36 @@ export class Lexer implements Lexer {
         }
         break;
       case "<":
-        token = newToken(TokenType.LT, "<", { start, end: this.position });
+        if (this.peekChar() === "=") {
+          this.readChar();
+          token = newToken(TokenType.LTE, "<=", { start, end: this.position });
+        } else {
+          token = newToken(TokenType.LT, "<", { start, end: this.position });
+        }
         break;
       case ">":
-        token = newToken(TokenType.GT, ">", { start, end: this.position });
+        if (this.peekChar() === "=") {
+          this.readChar();
+          token = newToken(TokenType.GTE, ">=", { start, end: this.position });
+        } else {
+          token = newToken(TokenType.GT, ">", { start, end: this.position });
+        }
+        break;
+      case "&":
+        if (this.peekChar() === "&") {
+          this.readChar();
+          token = newToken(TokenType.AND, "&&", { start, end: this.position });
+        } else {
+          token = this.illegalToken({ start, end: this.position });
+        }
+        break;
+      case "|":
+        if (this.peekChar() === "|") {
+          this.readChar();
+          token = newToken(TokenType.OR, "||", { start, end: this.position });
+        } else {
+          token = this.illegalToken({ start, end: this.position });
+        }
         break;
       case ",":
         token = newToken(TokenType.COMMA, ",", { start, end: this.position });
@@ -133,13 +160,17 @@ export class Lexer implements Lexer {
         }
         // or ILLEGAL, 
         else {
-          console.error('Lexer does not recognize the following character ', this.ch);
-          token = newToken(TokenType.ILLEGAL, this.ch, { start, end: this.position });
+          token = this.illegalToken({ start, end: this.position });
         }
     }
 
     this.readChar(); // Set this.ch, and move cursor position to next char
     return token;
+  }
+
+  illegalToken(position: Position) {
+    console.error('Lexer does not recognize the following character ', this.ch);
+    return newToken(TokenType.ILLEGAL, this.ch, position);
   }
 
   readIdentifier() {
@@ -166,10 +197,14 @@ export class Lexer implements Lexer {
   }
 
   private readString(start: number) {
-
+    const expectedClosingChar = this.input[start]; // Should be same as opening char,  either " or '
+    if (expectedClosingChar !== "\"" && expectedClosingChar !== "'") {
+      throw new Error('readString expected string to start with either single or double quotes, but received: ' + expectedClosingChar);
+    }
+    
     this.readChar();
 
-    while (this.ch !== "\"" && !this.isEOF()) {
+    while (this.ch !== expectedClosingChar && !this.isEOF()) {
       this.readChar();
     }
 

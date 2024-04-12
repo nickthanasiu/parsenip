@@ -19,6 +19,10 @@ export enum TokenType {
     NOT_EQ = "NOT_EQ",
     LT = "LT",
     GT = "GT",
+    LTE = "LTE",
+    GTE = "GTE",
+    AND = "AND",
+    OR = "OR",
   
     // Delimiters
     COMMA = "COMMA",

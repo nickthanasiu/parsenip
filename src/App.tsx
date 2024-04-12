@@ -1,7 +1,8 @@
 import { useState, useRef} from 'react';
 import { editor } from "monaco-editor";
 import SplitScreen from './components/SplitScreen';
-import TextEditor, { useCursorPosition } from './features/textEditor';
+import TextEditor from './features/textEditor';
+import { useCursorPosition } from "./hooks/useCursorPosition";
 import ResultsPanels from './features/resultsPanels';
 import './App.css';
 import { Editor } from '@monaco-editor/react';

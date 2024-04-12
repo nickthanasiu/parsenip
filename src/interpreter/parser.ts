@@ -16,7 +16,9 @@ const precedences = new Map<TokenType, Precedence>([
     [TokenType.EQ, Precedence.EQUALS],
     [TokenType.NOT_EQ, Precedence.EQUALS],
     [TokenType.LT, Precedence.LESS_GREATER],
+    [TokenType.LTE, Precedence.LESS_GREATER],
     [TokenType.GT, Precedence.LESS_GREATER],
+    [TokenType.GTE, Precedence.LESS_GREATER],
     [TokenType.PLUS, Precedence.SUM],
     [TokenType.MINUS, Precedence.SUM],
     [TokenType.ASTERISK, Precedence.PRODUCT],
@@ -56,7 +58,9 @@ export class Parser implements Parser {
         [TokenType.ASTERISK, this.parseInfixExpression],
         [TokenType.SLASH, this.parseInfixExpression],
         [TokenType.GT, this.parseInfixExpression],
+        [TokenType.GTE, this.parseInfixExpression],
         [TokenType.LT, this.parseInfixExpression],
+        [TokenType.LTE, this.parseInfixExpression],
         [TokenType.EQ, this.parseInfixExpression],
         [TokenType.NOT_EQ, this.parseInfixExpression],
         [TokenType.LPAREN, this.parseCallExpression],
@@ -81,8 +85,6 @@ export class Parser implements Parser {
         while (!this.currTokenIs(TokenType.EOF)) {
             const statement = this.parseStatement();
 
-            
-            // If statement is not null, add it to statements[]
             if (statement) {
                 statements.push(statement);
             }
@@ -90,7 +92,7 @@ export class Parser implements Parser {
             this.nextToken();
         }
 
-        return ast.program(statements, { 
+        return ast.program(statements, {
             start,
             end: this.currToken.position.end
         });
@@ -237,7 +239,7 @@ export class Parser implements Parser {
         });
     }
 
-    private parseExpression(precedence: number = Precedence.LOWEST) {
+    private parseExpression(precedence: Precedence = Precedence.LOWEST) {
         const prefixParseFn = this.prefixParseFns.get(this.currToken.type);
 
         if (!prefixParseFn) {
