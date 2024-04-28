@@ -84,7 +84,14 @@ function evalInfixOperatorExpression(operator: string, left: obj.Object, right: 
     if (left.kind === "integer" && right.kind === "integer") {
         return evalIntegerInfixExpression(operator, left, right);
     }
-    return obj.NULL;
+
+    switch (operator) {
+        case "==":
+            return nativeBoolToBooleanObject(left === right);
+        case "!=":
+            return nativeBoolToBooleanObject(left != right);
+        default:
+            return obj.NULL;
 }
 
 function evalIntegerInfixExpression(operator: string, left: obj.Integer, right: obj.Integer) {
