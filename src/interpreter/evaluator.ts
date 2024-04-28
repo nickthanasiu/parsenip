@@ -7,11 +7,15 @@ export function evaluate(node: ast.Node, ctx: Context): obj.Object {
 
         // Statements
         case "program":
-            return evalProgram(node, ctx);
+            return evalStatements(node.body, ctx);
         case "expressionStatement":
             return evaluate(node.expression, ctx);
-
-        // Expressions
+        case "blockStatement":
+            return evalStatements(node.statements, ctx);
+        
+            // Expressions
+        case "ifExpression":
+            return evalIfExpression(node, ctx);
         case "integerLiteral":
             return obj.integer(node.value);
         case "booleanLiteral":
@@ -34,10 +38,10 @@ export function evaluate(node: ast.Node, ctx: Context): obj.Object {
 
 
 
-function evalProgram(program: ast.Program, ctx: Context) {
+function evalStatements(statements: ast.Statement[], ctx: Context) {
     let result!: obj.Object;
 
-    for (const statement of program.body) {
+    for (const statement of statements) {
         result = evaluate(statement, ctx);
 
         if (result?.kind == "returnValue") {
@@ -48,6 +52,31 @@ function evalProgram(program: ast.Program, ctx: Context) {
     }
 
     return result;
+}
+
+function evalIfExpression(ifExpr: ast.IfExpression, ctx: Context) {
+    const condition = evaluate(ifExpr.condition, ctx);
+
+    if (isTruthy(condition)) {
+        return evaluate(ifExpr.consequence, ctx);
+    } else if (ifExpr.alternative) {
+        return evaluate(ifExpr.alternative, ctx);
+    } else {
+        return obj.NULL;
+    }
+}
+
+function isTruthy(condition: obj.Object) {
+    switch (condition) {
+        case obj.NULL:
+            return false;
+        case obj.TRUE:
+            return true;
+        case obj.FALSE:
+            return false;
+        default:
+            return true;
+    }
 }
 
 function evalPrefixExpression(operator: string, right: obj.Object) {
@@ -126,5 +155,5 @@ function evalIntegerInfixExpression(operator: string, left: obj.Integer, right: 
 }
 
 function nativeBoolToBooleanObject(input: boolean): obj.Boolean {
-    return input ? obj.TRUE : obj.FALSE
+    return input ? obj.TRUE : obj.FALSE;
 }
