@@ -18,9 +18,13 @@ export function evaluate(node: ast.Node, ctx: Context): obj.Object {
             return evalBlockStatement(node, ctx);
         case "variableDeclaration":
             return evalVariableDeclaration(node, ctx);
-
         case "identifier":
             return evalIdentifier(node, ctx);
+
+        case "functionExpression":
+            const params = node.parameters;
+            const body = node.body;
+            return obj.functionExpr(params, body, ctx);
         
             // Expressions
         case "ifExpression":

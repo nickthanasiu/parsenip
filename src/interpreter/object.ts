@@ -1,9 +1,13 @@
+import * as ast from  './ast';
+import { Context } from './context';
+
 export type Object =
     | Integer
     | Boolean
     | String
     | Null
     | Undefined
+    | FunctionExpr
     | ReturnValue
 
 export interface Integer {
@@ -70,6 +74,23 @@ export function returnValue(value: Object): ReturnValue {
     }
 }
 
+export interface FunctionExpr {
+    kind: "functionExpression";
+    parameters: ast.Identifier[];
+    body: ast.BlockStatement;
+    env: Context
+}
+
+export function functionExpr(
+    parameters: ast.Identifier[],
+    body:       ast.BlockStatement,
+    env:        Context
+): FunctionExpr {
+    return {
+        kind: "functionExpression", parameters, body, env
+    };
+}
+
 export function toString(obj: Object) {
     switch (obj.kind) {
         case "boolean":
@@ -82,6 +103,9 @@ export function toString(obj: Object) {
             return "null";
         case "undefined":
             return "undefined";
+        case "functionExpression":
+            // @TODO: Find better format for this
+            return `[Function]`;
         default:
             throw new Error(`
             obj.toString was passed
