@@ -1,4 +1,6 @@
-import { Object } from "./object";
+import { Object, UNDEFINED } from "./object";
+
+
 
 export interface Context {
     store: Map<string, Object>;
@@ -12,17 +14,54 @@ export class Context implements Context {
         this.outer = outer;
     }
 
-    public get(key: string): Object | undefined {
+    private get(key: string): Object {
         let obj = this.store.get(key);
 
         if (!obj) {
             obj = this.outer?.get(key);
         }
 
-        return obj;
+        return obj || UNDEFINED;
     }
 
-    public set(key: string, value: Object) {
+    private set(key: string, value: Object) {
         this.store.set(key, value);
+    }
+
+    public declareVar(varname: string, value?: Object) {
+        if (!value) {
+            value = UNDEFINED;
+        }
+
+        if (this.store.has(varname)) {
+            throw `Cannot declare variable ${varname}. As it is already defined`;
+        }
+
+        this.store.set(varname, value);
+        return value;
+    }
+
+    public assignVar(varname: string, value: Object) {
+        const ctx = this.resolve(varname);
+        ctx.set(varname, value);
+
+        return value;
+    }
+
+    public lookupVar(varname: string) {
+        const ctx = this.resolve(varname);
+        return ctx.get(varname);
+    }
+
+    private resolve(varname: string): Context {
+        if (this.store.has(varname)) {
+            return this;
+        }
+
+        if (!this.outer) {
+            throw `Cannot resolve ${varname}`;
+        }
+
+        return this.outer.resolve(varname);
     }
 }

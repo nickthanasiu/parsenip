@@ -2,16 +2,25 @@ import * as ast from "./ast";
 import { Context } from "./context";
 import * as obj from "./object";
 
+
 export function evaluate(node: ast.Node, ctx: Context): obj.Object {
     switch (node.type) {
 
         // Statements
         case "program":
-            return evalStatements(node.body, ctx);
+            return evalProgram(node, ctx);
+        case "returnStatement":
+            const val = evaluate(node.returnValue, ctx);
+            return obj.returnValue(val);
         case "expressionStatement":
             return evaluate(node.expression, ctx);
         case "blockStatement":
-            return evalStatements(node.statements, ctx);
+            return evalBlockStatement(node, ctx);
+        case "variableDeclaration":
+            return evalVariableDeclaration(node, ctx);
+
+        case "identifier":
+            return evalIdentifier(node, ctx);
         
             // Expressions
         case "ifExpression":
@@ -19,7 +28,7 @@ export function evaluate(node: ast.Node, ctx: Context): obj.Object {
         case "integerLiteral":
             return obj.integer(node.value);
         case "booleanLiteral":
-            return nativeBoolToBooleanObject(node.value);
+            return obj.nativeBoolToBooleanObject(node.value);
         case "stringLiteral":
             return obj.string(node.value);
         case "prefixExpression": {
@@ -38,10 +47,10 @@ export function evaluate(node: ast.Node, ctx: Context): obj.Object {
 
 
 
-function evalStatements(statements: ast.Statement[], ctx: Context) {
+function evalProgram(program: ast.Program, ctx: Context) {
     let result!: obj.Object;
 
-    for (const statement of statements) {
+    for (const statement of program.body) {
         result = evaluate(statement, ctx);
 
         if (result?.kind == "returnValue") {
@@ -52,6 +61,37 @@ function evalStatements(statements: ast.Statement[], ctx: Context) {
     }
 
     return result;
+}
+
+function evalIdentifier(identifier: ast.Identifier, ctx: Context) {
+    const value = ctx.lookupVar(identifier.value);
+    return value;
+
+}
+
+function evalBlockStatement(block: ast.BlockStatement, ctx: Context) {
+    let result!: obj.Object;
+
+    for (const statement of block.statements) {
+        result = evaluate(statement, ctx);
+
+        if (result && result.kind == "returnValue") {
+            return result;
+        }
+    }
+
+    return result;
+}
+
+function evalVariableDeclaration(varDeclaration: ast.VariableDeclaration, ctx: Context) {
+    let val;
+
+    if (varDeclaration.value) {
+        val = evaluate(varDeclaration.value, ctx);
+    }
+
+    ctx.declareVar(varDeclaration.identifier.value, val);
+    return val || obj.UNDEFINED;
 }
 
 function evalIfExpression(ifExpr: ast.IfExpression, ctx: Context) {
@@ -116,11 +156,12 @@ function evalInfixOperatorExpression(operator: string, left: obj.Object, right: 
 
     switch (operator) {
         case "==":
-            return nativeBoolToBooleanObject(left === right);
+            return obj.nativeBoolToBooleanObject(left === right);
         case "!=":
-            return nativeBoolToBooleanObject(left != right);
+            return obj.nativeBoolToBooleanObject(left != right);
         default:
             return obj.NULL;
+    }
 }
 
 function evalIntegerInfixExpression(operator: string, left: obj.Integer, right: obj.Integer) {
@@ -138,22 +179,18 @@ function evalIntegerInfixExpression(operator: string, left: obj.Integer, right: 
             return obj.integer(leftVal / rightVal);
 
         case ">":
-            return nativeBoolToBooleanObject(leftVal > rightVal);
+            return obj.nativeBoolToBooleanObject(leftVal > rightVal);
         case ">=":
-            return nativeBoolToBooleanObject(leftVal >= rightVal);
+            return obj.nativeBoolToBooleanObject(leftVal >= rightVal);
         case "<":
-            return nativeBoolToBooleanObject(leftVal < rightVal);
+            return obj.nativeBoolToBooleanObject(leftVal < rightVal);
         case "<=":
-            return nativeBoolToBooleanObject(leftVal <= rightVal);
+            return obj.nativeBoolToBooleanObject(leftVal <= rightVal);
         case "==":
-            return nativeBoolToBooleanObject(leftVal == rightVal);
+            return obj.nativeBoolToBooleanObject(leftVal == rightVal);
         case "!=":
-            return nativeBoolToBooleanObject(leftVal != rightVal);
+            return obj.nativeBoolToBooleanObject(leftVal != rightVal);
         default:
             return obj.NULL;
     }
-}
-
-function nativeBoolToBooleanObject(input: boolean): obj.Boolean {
-    return input ? obj.TRUE : obj.FALSE;
 }

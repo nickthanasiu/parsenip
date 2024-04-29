@@ -3,6 +3,7 @@ export type Object =
     | Boolean
     | String
     | Null
+    | Undefined
     | ReturnValue
 
 export interface Integer {
@@ -51,6 +52,11 @@ interface Null {
 
 export const NULL: Null = { kind: "null" };
 
+interface Undefined {
+    kind: "undefined"
+}
+
+export const UNDEFINED: Undefined = { kind: "undefined" }
 
 export interface ReturnValue {
     kind: "returnValue";
@@ -64,7 +70,6 @@ export function returnValue(value: Object): ReturnValue {
     }
 }
 
-
 export function toString(obj: Object) {
     switch (obj.kind) {
         case "boolean":
@@ -75,10 +80,15 @@ export function toString(obj: Object) {
             return `${obj.value} : string`;
         case "null":
             return "null";
+        case "undefined":
+            return "undefined";
         default:
             throw new Error(`
             obj.toString was passed
             unhandled object type: ${obj.kind}
         `);
     }
+}
+export function nativeBoolToBooleanObject(input: boolean): Boolean {
+    return input ? TRUE : FALSE;
 }
