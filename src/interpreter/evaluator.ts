@@ -25,7 +25,13 @@ export function evaluate(node: ast.Node, ctx: Context): obj.Object {
             const params = node.parameters;
             const body = node.body;
             return obj.functionExpr(params, body, ctx);
-        
+
+        case "callExpression":
+            // @TODO: Error handling
+            const func = evaluate(node.function, ctx);
+            const args = evalExpressions(node.arguments, ctx);
+            return applyFunction(func, args);
+
             // Expressions
         case "ifExpression":
             return evalIfExpression(node, ctx);
@@ -79,12 +85,18 @@ function evalBlockStatement(block: ast.BlockStatement, ctx: Context) {
     for (const statement of block.statements) {
         result = evaluate(statement, ctx);
 
+
         if (result && result.kind == "returnValue") {
             return result;
         }
     }
 
     return result;
+}
+
+function evalExpressions(expressions: ast.Expression[], ctx: Context) {
+    // @TODO: Handle errors
+    return expressions.map(expr => evaluate(expr, ctx));
 }
 
 function evalVariableDeclaration(varDeclaration: ast.VariableDeclaration, ctx: Context) {
@@ -197,4 +209,33 @@ function evalIntegerInfixExpression(operator: string, left: obj.Integer, right: 
         default:
             return obj.NULL;
     }
+}
+
+function applyFunction(fn: obj.Object, args: obj.Object[]) {
+    if (fn.kind !== "functionExpression") {
+        throw `Expected a function to apply, you passed ${fn.kind}`;
+    }
+
+    const extendedEnv = extendFunctionEnv(fn, args);
+    const evaluated = evaluate(fn.body, extendedEnv);
+
+    return unwrapReturnValue(evaluated);
+}
+
+function extendFunctionEnv(fn: obj.FunctionExpr, args: obj.Object[]) {
+    const env = new Context(fn.env);
+
+    fn.parameters.forEach((param, paramIdx) => {
+        env.declareVar(param.value, args[paramIdx]);
+    });
+
+    return env;
+}
+
+function unwrapReturnValue(obj: obj.Object) {
+    if (obj.kind === "returnValue") {
+        return obj.value;
+    }
+
+    return obj;
 }

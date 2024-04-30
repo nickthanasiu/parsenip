@@ -2,6 +2,7 @@ import { Lexer } from "./lexer";
 import * as ast from "./ast";
 import { Token, TokenType } from "./token";
 
+
 enum Precedence {
     LOWEST = 0,
     EQUALS = 1,
@@ -49,7 +50,7 @@ export class Parser implements Parser {
         [TokenType.LBRACE, this.parseObjectExpression],
         [TokenType.LBRACKET, this.parseArrayLiteral],
         [TokenType.IF, this.parseIfExpression],
-        [TokenType.FUNCTION, this.parseFunctionLiteral],
+        [TokenType.FUNCTION, this.parseFunctionExpression],
     ]);
 
     private infixParseFns = this.bindInfixParseFns([
@@ -79,11 +80,13 @@ export class Parser implements Parser {
     }
 
     public parseProgram() {
+
         const start = this.currToken.position.start;
         const statements: ast.Statement[] = [];
 
         while (!this.currTokenIs(TokenType.EOF)) {
             const statement = this.parseStatement();
+
 
             if (statement) {
                 statements.push(statement);
@@ -99,6 +102,8 @@ export class Parser implements Parser {
     }
 
     private parseStatement() {
+
+
         switch (this.currToken.type) {
             case TokenType.LET:
             case TokenType.CONST:
@@ -129,6 +134,7 @@ export class Parser implements Parser {
             this.currToken.literal,
             this.currToken.position
         );
+
 
         if (this.expectPeek(TokenType.SEMICOLON)) {
             if (isConstant) {
@@ -226,6 +232,7 @@ export class Parser implements Parser {
     private parseExpressionStatement() {
         const start = this.currToken.position.start;
         const expression = this.parseExpression(Precedence.LOWEST);
+
 
         if (!expression) return null;
         
@@ -445,7 +452,6 @@ export class Parser implements Parser {
     }
 
     private parseBlockStatement() {
-
         const start = this.currToken.position.start;
 
         const blockStatements: ast.Statement[] = [];
@@ -468,7 +474,7 @@ export class Parser implements Parser {
         })
     }
 
-    private parseFunctionLiteral() {
+    private parseFunctionExpression() {
         const { start } = this.currToken.position;
 
         if (!this.expectPeek(TokenType.LPAREN)) {
@@ -485,12 +491,14 @@ export class Parser implements Parser {
 
         const body = this.parseBlockStatement();
 
-        return ast.functionExpression({
+        const functionExpression = ast.functionExpression({
             parameters,
             body,
             start,
             end: this.currToken.position.end
         });
+
+        return functionExpression;
     }
 
     private parseFunctionParameters() {

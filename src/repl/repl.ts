@@ -17,7 +17,6 @@ async function start() {
 
     if (args.length === 1) {
         const filename = args[0];
-        console.log('FILENAME ', filename);
         await evalFile(filename);
         return;
     }
