@@ -8,6 +8,7 @@ export type Object =
     | Null
     | Undefined
     | FunctionExpr
+    | FunctionDec
     | ReturnValue
 
 export interface Integer {
@@ -91,6 +92,29 @@ export function functionExpr(
     };
 }
 
+export interface FunctionDec {
+    kind:       "functionDeclaration";
+    identifier: ast.Identifier;
+    parameters: ast.Identifier[];
+    body:       ast.BlockStatement;
+    env:        Context;
+}
+
+export function functionDec(
+    identifier: ast.Identifier,
+    parameters: ast.Identifier[],
+    body:       ast.BlockStatement,
+    env:        Context
+): FunctionDec {
+    return {
+        kind: "functionDeclaration",
+        identifier,
+        parameters,
+        body,
+        env
+    }
+}
+
 export function toString(obj: Object) {
     switch (obj.kind) {
         case "boolean":
@@ -104,6 +128,7 @@ export function toString(obj: Object) {
         case "undefined":
             return "undefined";
         case "functionExpression":
+        case "functionDeclaration":
             // @TODO: Find better format for this
             return `[Function]`;
         default:

@@ -20,18 +20,16 @@ export function evaluate(node: ast.Node, ctx: Context): obj.Object {
             return evalVariableDeclaration(node, ctx);
         case "identifier":
             return evalIdentifier(node, ctx);
-
         case "functionExpression":
-            const params = node.parameters;
-            const body = node.body;
-            return obj.functionExpr(params, body, ctx);
-
+            return obj.functionExpr(node.parameters, node.body, ctx);
+        case "functionDeclaration":
+            return evalFunctionDeclaration(node, ctx);
         case "callExpression":
             // @TODO: Error handling
             const func = evaluate(node.function, ctx);
             const args = evalExpressions(node.arguments, ctx);
             return applyFunction(func, args);
-
+            
             // Expressions
         case "ifExpression":
             return evalIfExpression(node, ctx);
@@ -100,7 +98,7 @@ function evalExpressions(expressions: ast.Expression[], ctx: Context) {
 }
 
 function evalVariableDeclaration(varDeclaration: ast.VariableDeclaration, ctx: Context) {
-    let val;
+    let val: obj.Object | undefined;
 
     if (varDeclaration.value) {
         val = evaluate(varDeclaration.value, ctx);
@@ -108,6 +106,16 @@ function evalVariableDeclaration(varDeclaration: ast.VariableDeclaration, ctx: C
 
     ctx.declareVar(varDeclaration.identifier.value, val);
     return val || obj.UNDEFINED;
+}
+
+function evalFunctionDeclaration(functionDec: ast.FunctionDeclaration, ctx: Context) {
+    const { identifier, parameters, body } = functionDec;
+
+    const functionDecObj = obj.functionDec(identifier, parameters, body, ctx);
+    ctx.declareVar(identifier.value, functionDecObj);
+
+    return functionDecObj;
+
 }
 
 function evalIfExpression(ifExpr: ast.IfExpression, ctx: Context) {
@@ -212,7 +220,7 @@ function evalIntegerInfixExpression(operator: string, left: obj.Integer, right: 
 }
 
 function applyFunction(fn: obj.Object, args: obj.Object[]) {
-    if (fn.kind !== "functionExpression") {
+    if (fn.kind !== "functionExpression" && fn.kind !== "functionDeclaration") {
         throw `Expected a function to apply, you passed ${fn.kind}`;
     }
 
@@ -222,7 +230,10 @@ function applyFunction(fn: obj.Object, args: obj.Object[]) {
     return unwrapReturnValue(evaluated);
 }
 
-function extendFunctionEnv(fn: obj.FunctionExpr, args: obj.Object[]) {
+function extendFunctionEnv(
+    fn: obj.FunctionExpr | obj.FunctionDec,
+    args: obj.Object[]
+) {
     const env = new Context(fn.env);
 
     fn.parameters.forEach((param, paramIdx) => {
