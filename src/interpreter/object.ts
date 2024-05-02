@@ -6,6 +6,7 @@ export type Object =
     | Boolean
     | String
     | ObjectLiteral
+    | ArrayLiteral
     | Null
     | Undefined
     | FunctionExpr
@@ -60,6 +61,18 @@ export function objectLiteral(properties: ast.Property[]): ObjectLiteral {
     return {
         kind: "objectLiteral",
         properties
+    }
+}
+
+export interface ArrayLiteral {
+    kind: "arrayLiteral";
+    elements: ast.Expression[];
+}
+
+export function arrayLiteral(elements: ast.Expression[]): ArrayLiteral {
+    return {
+        kind: "arrayLiteral",
+        elements
     }
 }
 

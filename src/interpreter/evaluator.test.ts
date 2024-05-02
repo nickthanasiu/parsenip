@@ -15,6 +15,16 @@ test(`evaluator retrieves value of key from object literal`, () => {
   expect(evaluated).toEqual(expected);
 });
 
+test(`evaluator retrieves value from array literal using index`, () => {
+  const evaluated = testEval(`
+    const arr = ['a', 'b', 'c'];
+    arr[0];
+  `);
+
+  const expected = obj.string('a');
+  expect(evaluated).toEqual(expected);
+})
+
 
 function testEval(input: string): obj.Object {
   const l = new Lexer(input);

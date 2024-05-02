@@ -2,7 +2,6 @@ import * as ast from "./ast";
 import { Context } from "./context";
 import * as obj from "./object";
 
-
 export function evaluate(node: ast.Node, ctx: Context): obj.Object {
     switch (node.type) {
 
@@ -44,6 +43,8 @@ export function evaluate(node: ast.Node, ctx: Context): obj.Object {
             return obj.string(node.value);
         case "objectLiteral":
             return obj.objectLiteral(node.properties);
+        case "arrayLiteral":
+            return obj.arrayLiteral(node.elements);
         case "prefixExpression": {
             const right = evaluate(node.right, ctx);
             return evalPrefixExpression(node.operator, right);
@@ -125,25 +126,52 @@ function evalFunctionDeclaration(functionDec: ast.FunctionDeclaration, ctx: Cont
 
 function evalMemberExpression(memberExpr: ast.MemberExpression, ctx: Context) {
     const left = evaluate(memberExpr.left, ctx);
-    const index = evaluate(memberExpr.index, ctx);
-
-    if (left.kind !== "objectLiteral") {
-        // @TODO: This is NOT how JavaScript handles this, but it will do for now
-        throw `Cannot use member expression on ${left.kind}`;
+    
+    if (left.kind === "objectLiteral") {
+        return evalObjectMemberExpression(left, memberExpr.index, ctx);
     }
 
-    if (index.kind !== "string") {
+    if (left.kind === "arrayLiteral") {
+        return evalArrayMemberExpression(left, memberExpr.index, ctx);
+    }
+
+    // @TODO: This is NOT how JavaScript handles this, but it will do for now
+    throw `Cannot use member expression on ${left.kind}`;    
+}
+
+function evalObjectMemberExpression(objLiteral: obj.ObjectLiteral, keyExpression: ast.Expression, ctx: Context) {
+
+    const key = evaluate(keyExpression, ctx);
+
+    if (key.kind !== "string") {
         // @TODO: This is NOT how JavaScript handles this, but it will do for now
         throw `Object key must be a string`;
     }
 
-    const matchingProp = left.properties.find(p => p.key.value == index.value);
+    const matchingProp = objLiteral.properties.find(p => p.key.value == key.value);
 
     if (!matchingProp?.value) {
         return obj.UNDEFINED;
     }
 
     return evaluate(matchingProp.value, ctx);
+}
+
+function evalArrayMemberExpression(arrayLiteral: obj.ArrayLiteral, indexExpression: ast.Expression, ctx: Context) {
+    const indexObj = evaluate(indexExpression, ctx);
+    
+    if (indexObj.kind !== "integer") {
+        // @TODO: Make sure floats, (i.e, non-integer numbers) can't end up here
+        throw `Array index must be an integer`;
+    }
+
+    const foundExpression = arrayLiteral.elements[indexObj.value];
+
+    if (!foundExpression) {
+        return obj.UNDEFINED;
+    }
+
+    return evaluate(foundExpression, ctx);
 }
 
 function evalIfExpression(ifExpr: ast.IfExpression, ctx: Context) {
