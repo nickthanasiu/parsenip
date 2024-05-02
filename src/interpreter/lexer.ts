@@ -1,4 +1,4 @@
-import { Token, TokenType, newToken, lookupIdentifer, Position } from "./token";
+import { Token, TokenType, newToken, lookupIdentiferType, Position } from "./token";
 
 export interface Lexer {
   ch: string;
@@ -182,7 +182,10 @@ export class Lexer implements Lexer {
     }
 
     const text = this.input.slice(start, this.position - 1);
-    return lookupIdentifer(text, { start, end: this.position - 1 });
+    const pos = { start, end: this.position - 1 };
+    const identifierType = lookupIdentiferType(text);
+
+    return newToken(identifierType, text, pos);
   }
 
   private readNumber() {
@@ -208,7 +211,7 @@ export class Lexer implements Lexer {
       this.readChar();
     }
 
-    return this.input.slice(start, this.position);
+    return this.input.slice(start + 1, this.position - 1); // Leave the quotes off of string value
   }
 
   private skipSingleLineComment() {

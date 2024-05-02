@@ -11,6 +11,7 @@ enum Precedence {
     PRODUCT = 4,
     PREFIX = 5,
     CALL = 6,
+    INDEX = 7,
 }
 
 const precedences = new Map<TokenType, Precedence>([
@@ -25,6 +26,7 @@ const precedences = new Map<TokenType, Precedence>([
     [TokenType.ASTERISK, Precedence.PRODUCT],
     [TokenType.SLASH, Precedence.PRODUCT],
     [TokenType.LPAREN, Precedence.CALL],
+    [TokenType.LBRACKET, Precedence.INDEX],
 ]);
 
 type prefixParseFn = () => ast.Expression | null;
@@ -65,6 +67,7 @@ export class Parser implements Parser {
         [TokenType.EQ, this.parseInfixExpression],
         [TokenType.NOT_EQ, this.parseInfixExpression],
         [TokenType.LPAREN, this.parseCallExpression],
+        [TokenType.LBRACKET, this.parseMemberExpression],
     ]);
 
     constructor(lexer: Lexer) {
@@ -553,6 +556,22 @@ export class Parser implements Parser {
         }
 
         return args;
+    }
+
+    
+
+    private parseMemberExpression(left: ast.Expression) {
+        const start = this.currToken.position.start;
+        this.nextToken();
+        const index = this.parseExpression() as ast.Expression;
+
+        if (!this.expectPeek(TokenType.RBRACKET)) {
+            this.errors.push(`Expected ] at end of memberExpression`);
+            return null;
+        }
+
+
+        return ast.memberExpression(left, index, { start, end: this.currToken.position.end });
     }
 
     private parseStringLiteral() {

@@ -29,7 +29,10 @@ export function evaluate(node: ast.Node, ctx: Context): obj.Object {
             const func = evaluate(node.function, ctx);
             const args = evalExpressions(node.arguments, ctx);
             return applyFunction(func, args);
-            
+
+        case "memberExpression":
+            return evalMemberExpression(node, ctx);
+
             // Expressions
         case "ifExpression":
             return evalIfExpression(node, ctx);
@@ -39,6 +42,8 @@ export function evaluate(node: ast.Node, ctx: Context): obj.Object {
             return obj.nativeBoolToBooleanObject(node.value);
         case "stringLiteral":
             return obj.string(node.value);
+        case "objectLiteral":
+            return obj.objectLiteral(node.properties);
         case "prefixExpression": {
             const right = evaluate(node.right, ctx);
             return evalPrefixExpression(node.operator, right);
@@ -116,6 +121,29 @@ function evalFunctionDeclaration(functionDec: ast.FunctionDeclaration, ctx: Cont
 
     return functionDecObj;
 
+}
+
+function evalMemberExpression(memberExpr: ast.MemberExpression, ctx: Context) {
+    const left = evaluate(memberExpr.left, ctx);
+    const index = evaluate(memberExpr.index, ctx);
+
+    if (left.kind !== "objectLiteral") {
+        // @TODO: This is NOT how JavaScript handles this, but it will do for now
+        throw `Cannot use member expression on ${left.kind}`;
+    }
+
+    if (index.kind !== "string") {
+        // @TODO: This is NOT how JavaScript handles this, but it will do for now
+        throw `Object key must be a string`;
+    }
+
+    const matchingProp = left.properties.find(p => p.key.value == index.value);
+
+    if (!matchingProp?.value) {
+        return obj.UNDEFINED;
+    }
+
+    return evaluate(matchingProp.value, ctx);
 }
 
 function evalIfExpression(ifExpr: ast.IfExpression, ctx: Context) {

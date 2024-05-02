@@ -5,6 +5,7 @@ export type Object =
     | Integer
     | Boolean
     | String
+    | ObjectLiteral
     | Null
     | Undefined
     | FunctionExpr
@@ -50,6 +51,17 @@ export function boolean(value: boolean): Boolean {
 export const TRUE = boolean(true);
 export const FALSE = boolean(false);
 
+export interface ObjectLiteral {
+    kind: "objectLiteral";
+    properties: ast.Property[];
+}
+
+export function objectLiteral(properties: ast.Property[]): ObjectLiteral {
+    return {
+        kind: "objectLiteral",
+        properties
+    }
+}
 
 interface Null {
     kind: "null"
@@ -123,6 +135,8 @@ export function toString(obj: Object) {
             return `${obj.value} : integer`;
         case "string":
             return `${obj.value} : string`;
+        case "objectLiteral":
+            return JSON.stringify(obj);
         case "null":
             return "null";
         case "undefined":

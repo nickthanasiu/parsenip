@@ -82,7 +82,6 @@ export interface Position {
     ["false", TokenType.FALSE],
   ]);
   
-  export function lookupIdentifer(text: string, position: Position) {
-    const type = keywords.get(text) || TokenType.IDENT;
-    return newToken(type, text, position);
+  export function lookupIdentiferType(text: string) {
+    return keywords.get(text) || TokenType.IDENT;
   }

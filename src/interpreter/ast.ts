@@ -13,11 +13,13 @@ export type Expression =
     | IfExpression
     | FunctionExpression
     | CallExpression
+    | MemberExpression
 
     // Literals
     | StringLiteral
     | IntegerLiteral
     | BooleanLiteral
+    | Property
     | ObjectLiteral
     | ArrayLiteral
 ;
@@ -112,6 +114,21 @@ export const arrayLiteral = (props: WithoutType<ArrayLiteral>): ArrayLiteral => 
     elements: props.elements,
     ...positionFromProps(props)
 });
+
+export interface MemberExpression extends Position {
+    type: "memberExpression";
+    left: Expression;
+    index: Expression
+}
+
+export function memberExpression(left: Expression, index: Expression, position: Position): MemberExpression {
+    return {
+        type: "memberExpression",
+        ...position,
+        left,
+        index,
+    }
+}
 
 export interface PrefixExpression extends Position {
     type: "prefixExpression";
