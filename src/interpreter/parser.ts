@@ -5,13 +5,14 @@ import { Token, TokenType } from "./token";
 
 enum Precedence {
     LOWEST = 0,
-    EQUALS = 1,
-    LESS_GREATER = 2,
-    SUM = 3,
-    PRODUCT = 4,
-    PREFIX = 5,
-    CALL = 6,
-    INDEX = 7,
+    ASSIGN,
+    EQUALS,
+    LESS_GREATER,
+    SUM,
+    PRODUCT,
+    PREFIX,
+    CALL,
+    INDEX,
 }
 
 const precedences = new Map<TokenType, Precedence>([
@@ -27,6 +28,7 @@ const precedences = new Map<TokenType, Precedence>([
     [TokenType.SLASH, Precedence.PRODUCT],
     [TokenType.LPAREN, Precedence.CALL],
     [TokenType.LBRACKET, Precedence.INDEX],
+    [TokenType.ASSIGN, Precedence.ASSIGN],
 ]);
 
 type prefixParseFn = () => ast.Expression | null;
@@ -52,7 +54,7 @@ export class Parser implements Parser {
         [TokenType.LBRACE, this.parseObjectExpression],
         [TokenType.LBRACKET, this.parseArrayLiteral],
         [TokenType.IF, this.parseIfExpression],
-        [TokenType.FUNCTION, this.parseFunctionExpression],
+        [TokenType.FUNCTION, this.parseFunctionExpression], 
     ]);
 
     private infixParseFns = this.bindInfixParseFns([
@@ -68,6 +70,7 @@ export class Parser implements Parser {
         [TokenType.NOT_EQ, this.parseInfixExpression],
         [TokenType.LPAREN, this.parseCallExpression],
         [TokenType.LBRACKET, this.parseMemberExpression],
+        [TokenType.ASSIGN, this.parseAssignmentExpression],
     ]);
 
     constructor(lexer: Lexer) {
@@ -235,7 +238,6 @@ export class Parser implements Parser {
     private parseExpressionStatement() {
         const start = this.currToken.position.start;
         const expression = this.parseExpression(Precedence.LOWEST);
-
 
         if (!expression) return null;
         
@@ -520,6 +522,21 @@ export class Parser implements Parser {
         }
 
         return identifiers;
+    }
+
+    private parseAssignmentExpression(left: ast.Expression) {
+        const start = left.start;
+        const operator = this.currToken.literal;
+
+        if (operator != "=") {
+            this.errors.push(`Invalid assignment operator ${operator}`);
+            return null;
+        }
+
+        this.nextToken();
+
+        const right = this.parseExpression() as ast.Expression;
+        return ast.assignmentExpression(operator, left, right, { start, end: this.currToken.position.end });
     }
 
     private parseIdentifier() {

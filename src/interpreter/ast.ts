@@ -14,6 +14,7 @@ export type Expression =
     | FunctionExpression
     | CallExpression
     | MemberExpression
+    | AssignmentExpression
 
     // Literals
     | StringLiteral
@@ -128,6 +129,28 @@ export function memberExpression(left: Expression, index: Expression, position: 
         left,
         index,
     }
+}
+
+export interface AssignmentExpression extends Position {
+    type: "assignmentExpression";
+    operator: "="; // @TODO: Later on we may support other types of assignment operators such as +=, -=, etc.
+    left: Expression;
+    right: Expression;
+}
+
+export function assignmentExpression(
+    operator: "=",
+    left: Expression,
+    right: Expression,
+    position: Position
+): AssignmentExpression {
+    return {
+        type: "assignmentExpression",
+        operator,
+        left,
+        right,
+        ...position
+    };
 }
 
 export interface PrefixExpression extends Position {

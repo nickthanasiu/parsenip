@@ -150,6 +150,8 @@ export function toString(obj: Object) {
             return `${obj.value} : string`;
         case "objectLiteral":
             return JSON.stringify(obj);
+        case "arrayLiteral":
+            return obj.elements;
         case "null":
             return "null";
         case "undefined":
