@@ -25,11 +25,32 @@ test(`evaluator retrieves value from array literal using index`, () => {
   expect(evaluated).toEqual(expected);
 });
 
-test(`evaluator handles variable assignment`, () => {
+test(`evaluator handles variable assignment using identifier (i.e., someIdent = someValue;)`, () => {
 
   const cases = [
-    `let foo; foo = "bar";`,
-    `let foo = "baz"; foo = "bar";`,
+    `let foo; foo = "bar"; foo;`,
+    `let foo = "baz"; foo = "bar"; foo;`,
+    `
+      let foo = "original";
+
+      function update() {
+        foo = "updated";
+      }
+
+      update();
+      foo;
+    `,
+    `
+      let foo = "original";
+
+      function someFunc() {
+        let foo = "something else";
+        return foo;
+      }
+
+      someFunc();
+      foo;
+    `
   ];
 
   const evaluated = cases.map(testEval);
@@ -37,6 +58,8 @@ test(`evaluator handles variable assignment`, () => {
   const expected = [
     obj.string("bar"),
     obj.string("bar"),
+    obj.string("updated"),
+    obj.string("original"),
   ];
 
   expect(evaluated).toEqual(expected);
