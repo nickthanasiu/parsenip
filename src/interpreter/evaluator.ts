@@ -32,6 +32,9 @@ export function evaluate(node: ast.Node, ctx: Context): obj.Object {
         case "memberExpression":
             return evalMemberExpression(node, ctx);
 
+        case "assignmentExpression":
+            return evalAssignmentExpression(node, ctx);
+
             // Expressions
         case "ifExpression":
             return evalIfExpression(node, ctx);
@@ -110,8 +113,7 @@ function evalVariableDeclaration(varDeclaration: ast.VariableDeclaration, ctx: C
         val = evaluate(varDeclaration.value, ctx);
     }
 
-    ctx.declareVar(varDeclaration.identifier.value, val);
-    return val || obj.UNDEFINED;
+    return ctx.declareVar(varDeclaration.identifier.value, val);
 }
 
 function evalFunctionDeclaration(functionDec: ast.FunctionDeclaration, ctx: Context) {
@@ -121,7 +123,6 @@ function evalFunctionDeclaration(functionDec: ast.FunctionDeclaration, ctx: Cont
     ctx.declareVar(identifier.value, functionDecObj);
 
     return functionDecObj;
-
 }
 
 function evalMemberExpression(memberExpr: ast.MemberExpression, ctx: Context) {
@@ -172,6 +173,38 @@ function evalArrayMemberExpression(arrayLiteral: obj.ArrayLiteral, indexExpressi
     }
 
     return evaluate(foundExpression, ctx);
+}
+
+function evalAssignmentExpression(node: ast.AssignmentExpression, ctx: Context) {
+    const { operator, left, right } = node;
+
+    if (operator != "=") {
+        throw(`evalAssignmentExpression: received invalid assignment operator ${operator}`);
+    }
+
+    switch (left.type) {
+        // ident = ast.Expression
+        case "identifier":
+            const varName = left.value;
+            const rightVal = evaluate(right, ctx);
+            ctx.assignVar(varName, rightVal);
+            return rightVal;
+        default:
+            throw(`evalAssignmentExpression: Invalid left side of assignmentExpression. Only supports identifiers for now...`);
+    }
+    
+    
+
+    // indent[0] = ast.Expression
+    // ident['key'] = ast.Expression
+    // ident.key = ast.Expression
+    //const varName = evaluate(left, ctx);
+
+    /*
+    if (varName.kind !== "string") {
+        throw `evalAssignmentExpression: varName must be a string. Received ${varName.kind}`;
+    };
+    */    
 }
 
 function evalIfExpression(ifExpr: ast.IfExpression, ctx: Context) {

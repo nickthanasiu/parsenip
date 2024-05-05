@@ -23,7 +23,24 @@ test(`evaluator retrieves value from array literal using index`, () => {
 
   const expected = obj.string('a');
   expect(evaluated).toEqual(expected);
-})
+});
+
+test(`evaluator handles variable assignment`, () => {
+
+  const cases = [
+    `let foo; foo = "bar";`,
+    `let foo = "baz"; foo = "bar";`,
+  ];
+
+  const evaluated = cases.map(testEval);
+
+  const expected = [
+    obj.string("bar"),
+    obj.string("bar"),
+  ];
+
+  expect(evaluated).toEqual(expected);
+});
 
 
 function testEval(input: string): obj.Object {
