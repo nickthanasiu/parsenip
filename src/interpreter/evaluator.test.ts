@@ -4,8 +4,55 @@ import * as obj from "./object";
 import { Lexer } from "./lexer";
 import { Parser } from "./parser";
 
+test(`variable declarations`, () => {
+  const testCases = [
+    `let x;`,
+    `let x = "";`,
+    `const x = "";`,
+    `const x = "abc";`,
+    `let x = "abc";`,
+    `const x = 123;`,
+    `let x = 123;`,
+    //`const x = null;`,    @TODO: Handle null as a keyword
+    //`let x = null;`,
+    //`const x = undefined; `,
+    //`let x = undefined;`, @TODO: Handle undefined as a keyword
+    `const x = true;`,
+    `let x = false;`,
+    `const x = { foo: "bar" };`,
+  ];
+    
+  const actual = testCases.map(testEval);
+  const expected = [
+    obj.UNDEFINED,
+    obj.string(""),
+    obj.string(""),
+    obj.string("abc"),
+    obj.string("abc"),
+    obj.integer(123),
+    obj.integer(123),
+    //obj.NULL,
+    //obj.NULL,
+    //obj.UNDEFINED,
+    //obj.UNDEFINED,
+    obj.boolean(true),
+    obj.boolean(false),
 
-test(`evaluator retrieves value of key from object literal`, () => {
+    /*
+    obj.objectLiteral([
+      ast.property(
+        ast.identifier("foo", { start: 0, end: 0 }),
+        ast.stringLiteral({ value: "bar", start: 0, end: 0 })
+      )
+    ]),
+    */
+  ];
+
+  expect(actual).toEqual(expected);
+});
+
+
+test(`retrieve value of key from object literal`, () => {
   const evaluated = testEval(`
     const person = { name: "Nick" };
     person["name"];
@@ -15,7 +62,7 @@ test(`evaluator retrieves value of key from object literal`, () => {
   expect(evaluated).toEqual(expected);
 });
 
-test(`evaluator retrieves value from array literal using index`, () => {
+test(`retrieve value from array literal using index`, () => {
   const evaluated = testEval(`
     const arr = ['a', 'b', 'c'];
     arr[0];
@@ -25,7 +72,7 @@ test(`evaluator retrieves value from array literal using index`, () => {
   expect(evaluated).toEqual(expected);
 });
 
-test(`evaluator handles variable assignment using identifier (i.e., someIdent = someValue;)`, () => {
+test(`handle variable assignment using identifier (i.e., someIdent = someValue;)`, () => {
 
   const cases = [
     `let foo; foo = "bar"; foo;`,
@@ -64,6 +111,31 @@ test(`evaluator handles variable assignment using identifier (i.e., someIdent = 
 
   expect(evaluated).toEqual(expected);
 });
+
+/*
+test(`Handle object['key'] = val assignment`, () => {
+  const testCases = [
+    `
+      const person = {};
+      person["name"] = "Nick";
+    `,
+    `
+      const person = {};
+      person["name"] = "Nick";
+      person["name"];
+    `,
+];
+
+  const evaluated = testCases.map(testEval);
+  const expected = [
+    obj.string("Nick"),
+    obj.string("Nick"),
+  ];
+
+  expect(evaluated).toEqual(expected);
+});
+
+*/
 
 
 function testEval(input: string): obj.Object {

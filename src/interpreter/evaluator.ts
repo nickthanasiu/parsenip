@@ -189,8 +189,17 @@ function evalAssignmentExpression(node: ast.AssignmentExpression, ctx: Context) 
             const rightVal = evaluate(right, ctx);
             ctx.assignVar(varName, rightVal);
             return rightVal;
+        case "memberExpression":
+            const varName2 = evaluate(left, ctx);
+            console.log('varName2 :: ', varName2);
+            //const key = left.index;
+            const rightVal2 = evaluate(right, ctx);
+            return rightVal2;
         default:
-            throw(`evalAssignmentExpression: Invalid left side of assignmentExpression. Only supports identifiers for now...`);
+            throw(`
+                evalAssignmentExpression: Invalid left side of assignmentExpression: "${left.type}"
+                Only supports identifiers for now...
+            `);
     }
     
     
