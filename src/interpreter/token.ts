@@ -46,26 +46,20 @@ export enum TokenType {
     FALSE = "FALSE",
   }
 
-  export function tokenTypeToString(tt: TokenType) {
-    const tttsMap = new Map([
-      [TokenType.EOF, "EOF"],
-      [TokenType.ASSIGN, "ASSIGN"],
-      [TokenType.SEMICOLON, "SEMICOLON"],
-    ]);
 
-    return tttsMap.get(tt);
-  }
   
 export interface Position {
   start: number;
   end: number;
 }
 
-  export interface Token {
-    type: TokenType;
-    literal: string;
-    position: Position;
-  }
+export const DEFAULT_POSITION: Position = { start: -1, end: -1 };
+
+export interface Token {
+  type: TokenType;
+  literal: string;
+  position: Position;
+}
   
   export function newToken(type: TokenType, text: string, position: Position): Token {
     return { type, literal: text, position: position || { start: -1, end: -1 } };

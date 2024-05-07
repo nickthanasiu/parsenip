@@ -148,14 +148,11 @@ export class Parser implements Parser {
                 return null;
             }
 
-            return ast.variableDeclaration(
-                isConstant,
+            return ast.variableDeclaration({
+                constant: isConstant,
                 identifier,
-                {
-                    start,
-                    end: this.currToken.position.end
-                }
-            );
+                position: { start, end: this.currToken.position.end }
+            });
         }
 
         if (!this.expectPeek(TokenType.ASSIGN)) {
@@ -172,12 +169,12 @@ export class Parser implements Parser {
             return null;
         }
 
-        return ast.variableDeclaration(
-            isConstant,
+        return ast.variableDeclaration({
+            constant: isConstant,
             identifier,
-            { start, end: this.currToken.position.end },
             value,
-        );
+            position: { start, end: this.currToken.position.end },
+        });
     }
 
     private parseFunctionDeclaration() {
@@ -381,35 +378,34 @@ export class Parser implements Parser {
             return null;
         }
         
-
-        return ast.prefixExpression(
-            prefixOperator,
+        return ast.prefixExpression({
+            operator: prefixOperator,
             right,
-            {
+            position: {
                 start,
                 end: this.currToken.position.end
             }
-        );
+        });
     }
 
     private parseInfixExpression(left: ast.Expression) {
         const start = this.currToken.position.start;
-        const infixOperator = this.currToken.literal;
+        const operator = this.currToken.literal;
         const precedence = this.currPrecedence();
         this.nextToken();
         const right = this.parseExpression(precedence);
 
         if (!right) return null;
 
-        return ast.infixExpression(
+        return ast.infixExpression({
             left,
-            infixOperator,
+            operator,
             right,
-            {
+            position: {
                 start,
                 end: this.currToken.position.end
             }
-        );
+        });
     }
 
     private parseIfExpression() {

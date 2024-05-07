@@ -1,4 +1,4 @@
-import { Position } from "./token";
+import { Position, DEFAULT_POSITION } from "./token";
 
 export type Node = Expression | Statement | Program;
 
@@ -30,7 +30,7 @@ export interface Identifier extends Position {
     value: string;
 };
 
-export function identifier(value: string, position: Position): Identifier {
+export function identifier(value: string, position: Position = DEFAULT_POSITION): Identifier {
     return {
         type: "identifier",
         value,
@@ -54,7 +54,7 @@ export interface IntegerLiteral extends Position {
     value: number;
 }
 
-export function integerLiteral(value: number, position: Position): IntegerLiteral {
+export function integerLiteral(value: number, position: Position = DEFAULT_POSITION): IntegerLiteral {
     return {
         type: "integerLiteral",
         value,
@@ -68,11 +68,11 @@ export interface BooleanLiteral extends Position {
 }
 
 
-export function booleanLiteral(value: boolean, position: Position): BooleanLiteral {
+export function booleanLiteral(value: boolean, position?: Position): BooleanLiteral {
     return {
         type: "booleanLiteral",
         value,
-        ...position
+        ...(position || DEFAULT_POSITION)
     }
 }
 
@@ -159,12 +159,13 @@ export interface PrefixExpression extends Position {
     right: Expression;
 }
 
-export function prefixExpression(operator: string, right: Expression, position: Position): PrefixExpression {
+export function prefixExpression(props: {operator: string, right: Expression, position?: Position}): PrefixExpression {
+    const { operator, right, position } = props;
     return {
         type: "prefixExpression",
         operator,
         right,
-        ...position
+        ...(position || DEFAULT_POSITION)
     }
 }
 
@@ -175,13 +176,21 @@ interface InfixExpression extends Position {
     right: Expression;
 }
 
-export function infixExpression(left: Expression, operator: string, right: Expression, position: Position): InfixExpression {
+export function infixExpression(props: {
+    left: Expression,
+    operator: string,
+    right: Expression,
+    position?: Position
+}): InfixExpression {
+
+    const { left, operator, right, position } = props;
+
     return {
         type: "infixExpression",
         left,
         operator,
         right,
-        ...position
+        ...(position || DEFAULT_POSITION)
     };
 }
 
@@ -255,15 +264,18 @@ export interface VariableDeclaration extends Position {
     value?: Expression | null;
 }
 
-export function variableDeclaration(
+export function variableDeclaration(props: {
     constant: boolean,
     identifier: Identifier,
-    position: Position,
     value?: Expression | null,
-): VariableDeclaration {
+    position?: Position
+}): VariableDeclaration {
+
+    const { constant, position, identifier, value } = props;
+
     return {
         type: "variableDeclaration",
-        ...position,
+        ...(position || DEFAULT_POSITION),
         constant,
         identifier,
         value,
@@ -291,10 +303,10 @@ export interface ReturnStatement extends Position {
     returnValue: Expression;
 }
 
-export function returnStatement(expression: Expression, position: Position): ReturnStatement {
+export function returnStatement(expression: Expression, position?: Position): ReturnStatement {
     return {
         type: "returnStatement",
-        ...position,
+        ...(position || DEFAULT_POSITION),
         returnValue: expression
     };
 }
@@ -304,10 +316,10 @@ export interface ExpressionStatement extends Position {
     expression: Expression;
 }
 
-export function expressionStatement(expression: Expression, position: Position): ExpressionStatement {
+export function expressionStatement(expression: Expression, position?: Position): ExpressionStatement {
     return {
         type: "expressionStatement",
-        ...position,
+        ...(position || DEFAULT_POSITION),
         expression
     }
 }
@@ -342,10 +354,10 @@ export interface Program extends Position {
     body: Statement[];
 }
 
-export function program(statements: Statement[] = [], position: Position): Program {
+export function program(statements: Statement[] = [], position: Position = { start: -1, end: -1 }): Program {
     return {
         type: "program",
-        ...position,
         body: statements,
+        ...position,
     };
 }

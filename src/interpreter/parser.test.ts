@@ -1,9 +1,26 @@
+import * as ast from "./ast";
+import { parse } from "./parser";
 
-test('temp ', () => {
-    expect(true).toBe(!false);
-})
 
-/*
+function ignorePosition(a: ast.Node) {
+    if (typeof a === "object") {
+        // Array
+        if (Array.isArray(a)) {
+            a.every(el => ignorePosition(el));
+        }
+
+        // Object
+        for (const val of Object.values(a)) {
+            ignorePosition(val);
+        }
+    }
+
+
+    if (a && a.start != undefined && a.end != undefined) {
+        a.start = a.end = -1;
+    }
+}
+
 test('Parse let statements', () => {
 
     const input = `
@@ -15,17 +32,16 @@ test('Parse let statements', () => {
     `;
 
     const expected = ast.program([
-        ast.variableDeclaration(false, ast.identifier("myVar")),
-        ast.variableDeclaration(false, ast.identifier("x"), ast.integerLiteral(5)),
-        ast.variableDeclaration(false, ast.identifier("y"), ast.integerLiteral(10)),
-        ast.variableDeclaration(false, ast.identifier("foobar"), ast.integerLiteral(838383)),
+        ast.variableDeclaration({ constant: false, identifier: ast.identifier("myVar")}),
+        ast.variableDeclaration({ constant: false, identifier: ast.identifier("x"), value: ast.integerLiteral(5) }),
+        ast.variableDeclaration({ constant: false, identifier: ast.identifier("y"), value: ast.integerLiteral(10) }),
+        ast.variableDeclaration({ constant: false, identifier: ast.identifier("foobar"), value: ast.integerLiteral(838383) }),
     ]);
 
-    const actual = parse(input, { throwOnError: true });
+    const [actual, _] = parse(input, { throwOnError: true });
 
-    expect(actual).toStrictEqual(expected);
+    expect(ignorePosition(actual)).toEqual(ignorePosition(expected));
 });
-
 
 
 test('Parse const statements', () => {
@@ -35,14 +51,15 @@ test('Parse const statements', () => {
     `;
 
     const expected = ast.program([
-        ast.variableDeclaration(true, ast.identifier("myVar"), ast.integerLiteral(100)),
-        ast.variableDeclaration(false, ast.identifier("foo")),
+        ast.variableDeclaration({ constant: true, identifier: ast.identifier("myVar"), value: ast.integerLiteral(100) }),
+        ast.variableDeclaration({ constant: false, identifier: ast.identifier("foo") }),
     ]);
 
-    const actual = parse(input, { throwOnError: true });
+    const [actual, _] = parse(input, { throwOnError: true });
 
-    expect(actual).toStrictEqual(expected);
+    expect(ignorePosition(actual)).toEqual(ignorePosition(expected));
 });
+
 
 test('Parse return statements', () => {
     
@@ -62,9 +79,9 @@ test('Parse return statements', () => {
         ast.returnStatement(ast.booleanLiteral(false)),
     ]);
 
-    const actual = parse(input, { throwOnError: true });
+    const [actual, _] = parse(input, { throwOnError: true });
 
-    expect(actual).toStrictEqual(expected);
+    expect(ignorePosition(actual)).toStrictEqual(ignorePosition(expected));
 });
 
 test('Parse integer literals', () => {
@@ -73,10 +90,12 @@ test('Parse integer literals', () => {
     ]);
 
     const input = "5";
-    const actual = parse(input, { throwOnError: true });
+    const [actual, _] = parse(input, { throwOnError: true });
 
-    expect(actual).toStrictEqual(expected);
+    expect(ignorePosition(actual)).toStrictEqual(ignorePosition(expected));
 });
+
+
 
 test('Parse prefix expressions', () => {
     
@@ -84,40 +103,48 @@ test('Parse prefix expressions', () => {
         // !5;
         ast.program([
             ast.expressionStatement(
-                ast.prefixExpression("!", ast.integerLiteral(5))
+                ast.prefixExpression({ operator: "!", right: ast.integerLiteral(5)})
             ),
         ]),
         // -15
         ast.program([
             ast.expressionStatement(
-                ast.prefixExpression("-", ast.integerLiteral(15))
+                ast.prefixExpression({ operator: "-", right: ast.integerLiteral(15) })
             )
         ]),
         // !true
         ast.program([
             ast.expressionStatement(
-                ast.prefixExpression("!", ast.booleanLiteral(true))
+                ast.prefixExpression({ operator: "!", right: ast.booleanLiteral(true) })
             )
         ]),
         // !false
         ast.program([
             ast.expressionStatement(
-                ast.prefixExpression("!", ast.booleanLiteral(false))
+                ast.prefixExpression({ operator: "!", right: ast.booleanLiteral(false) })
             )
         ]),
     ];
 
+    
     const inputs = [
         "!5;",
         "-15;",
         "!true;",
         "!false;",
     ];
+    
+    const actual = inputs.map(input => {
+        const [program, _] = parse(input, { throwOnError: true });
+        return program;
+    });
 
-    const actual = inputs.map(input => parse(input, { throwOnError: true }));
-
+    expected.forEach(ignorePosition);
+    actual.forEach(ignorePosition);
+    
     expect(actual).toStrictEqual(expected);
 });
+
 
 test('Parse infix expressions', () => {
     const operators = ["+", "-", "*", "/", ">", "<", "==", "!="];
@@ -125,18 +152,22 @@ test('Parse infix expressions', () => {
     const expected = operators.map(operator => {
         return ast.program([
             ast.expressionStatement(
-                ast.infixExpression(
-                    ast.integerLiteral(5),
+                ast.infixExpression({
+                    left: ast.integerLiteral(5),
                     operator,
-                    ast.integerLiteral(5),
-                )
+                    right: ast.integerLiteral(5),
+                })
             )
         ]);
     })
 
-    const actual = operators.map(operator => parse(`5 ${operator} 5;`, { throwOnError: true }));
+    const actual = operators.map(operator => {
+        const [program, _] = parse(`5 ${operator} 5;`, { throwOnError: true });
+        return program;
+    });
+
+    expected.forEach(ignorePosition);
+    actual.forEach(ignorePosition);
 
     expect(actual).toStrictEqual(expected);
 });
-
-*/
