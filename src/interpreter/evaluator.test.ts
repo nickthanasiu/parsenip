@@ -1,4 +1,4 @@
-import { Context } from "./context";
+import { Environment } from "./environment";
 import { evaluate } from "./evaluator";
 import * as obj from "./object";
 import { Lexer } from "./lexer";
@@ -150,5 +150,5 @@ function testEval(input: string): obj.Object {
     throw new Error(`Could not parse: ${input}`);
   }
 
-  return evaluate(program, new Context());
+  return evaluate(program, new Environment());
 }

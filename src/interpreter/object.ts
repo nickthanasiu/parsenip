@@ -1,5 +1,5 @@
 import * as ast from  './ast';
-import { Context } from './context';
+import { Environment } from './environment';
 
 export type Object =
     | Integer
@@ -104,13 +104,13 @@ export interface FunctionExpr {
     kind: "functionExpression";
     parameters: ast.Identifier[];
     body: ast.BlockStatement;
-    env: Context
+    env: Environment
 }
 
 export function functionExpr(
     parameters: ast.Identifier[],
     body:       ast.BlockStatement,
-    env:        Context
+    env:        Environment
 ): FunctionExpr {
     return {
         kind: "functionExpression", parameters, body, env
@@ -122,14 +122,14 @@ export interface FunctionDec {
     identifier: ast.Identifier;
     parameters: ast.Identifier[];
     body:       ast.BlockStatement;
-    env:        Context;
+    env:        Environment;
 }
 
 export function functionDec(
     identifier: ast.Identifier,
     parameters: ast.Identifier[],
     body:       ast.BlockStatement,
-    env:        Context
+    env:        Environment
 ): FunctionDec {
     return {
         kind: "functionDeclaration",

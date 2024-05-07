@@ -3,7 +3,7 @@ import fs from "fs";
 import { parse } from "../interpreter/parser";
 import { evaluate } from "../interpreter/evaluator";
 import * as obj from "../interpreter/object";
-import { Context } from "../interpreter/context";
+import { Environment } from "../interpreter/environment";
 
 start();
 
@@ -25,7 +25,7 @@ async function start() {
 }
 
 function repl() {
-    const ctx = new Context();
+    const env = new Environment();
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout,
@@ -37,7 +37,7 @@ function repl() {
     rl.on('line', input => {
         const [program, _] = parse(input);
 
-        const evaluated = evaluate(program, ctx);
+        const evaluated = evaluate(program, env);
         if (evaluated) {
             console.log(obj.toString(evaluated));
         }
@@ -54,10 +54,10 @@ async function evalFile(filename: string) {
             return;
         }
 
-        const ctx = new Context();
+        const env = new Environment();
         const code = data.toString();
         const [program, _] = parse(code);
-        const evaluated = evaluate(program, ctx);
+        const evaluated = evaluate(program, env);
         if (evaluated) {
             console.log(obj.toString(evaluated));
         }

@@ -274,7 +274,7 @@ export class Parser implements Parser {
     }
 
     private parseObjectExpression() {
-        let start = this.currToken.position.start;
+        const start = this.currToken.position.start;
 
         const properties: ast.Property[] = [];
 

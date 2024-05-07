@@ -1,43 +1,43 @@
 import * as ast from "./ast";
-import { Context } from "./context";
+import { Environment } from "./environment";
 import * as obj from "./object";
 
-export function evaluate(node: ast.Node, ctx: Context): obj.Object {
+export function evaluate(node: ast.Node, env: Environment): obj.Object {
     switch (node.type) {
 
         // Statements
         case "program":
-            return evalProgram(node, ctx);
+            return evalProgram(node, env);
         case "returnStatement":
-            const val = evaluate(node.returnValue, ctx);
+            const val = evaluate(node.returnValue, env);
             return obj.returnValue(val);
         case "expressionStatement":
-            return evaluate(node.expression, ctx);
+            return evaluate(node.expression, env);
         case "blockStatement":
-            return evalBlockStatement(node, ctx);
+            return evalBlockStatement(node, env);
         case "variableDeclaration":
-            return evalVariableDeclaration(node, ctx);
+            return evalVariableDeclaration(node, env);
         case "identifier":
-            return evalIdentifier(node, ctx);
+            return evalIdentifier(node, env);
         case "functionExpression":
-            return obj.functionExpr(node.parameters, node.body, ctx);
+            return obj.functionExpr(node.parameters, node.body, env);
         case "functionDeclaration":
-            return evalFunctionDeclaration(node, ctx);
+            return evalFunctionDeclaration(node, env);
         case "callExpression":
             // @TODO: Error handling
-            const func = evaluate(node.function, ctx);
-            const args = evalExpressions(node.arguments, ctx);
+            const func = evaluate(node.function, env);
+            const args = evalExpressions(node.arguments, env);
             return applyFunction(func, args);
 
         case "memberExpression":
-            return evalMemberExpression(node, ctx);
+            return evalMemberExpression(node, env);
 
         case "assignmentExpression":
-            return evalAssignmentExpression(node, ctx);
+            return evalAssignmentExpression(node, env);
 
             // Expressions
         case "ifExpression":
-            return evalIfExpression(node, ctx);
+            return evalIfExpression(node, env);
         case "integerLiteral":
             return obj.integer(node.value);
         case "booleanLiteral":
@@ -49,12 +49,12 @@ export function evaluate(node: ast.Node, ctx: Context): obj.Object {
         case "arrayLiteral":
             return obj.arrayLiteral(node.elements);
         case "prefixExpression": {
-            const right = evaluate(node.right, ctx);
+            const right = evaluate(node.right, env);
             return evalPrefixExpression(node.operator, right);
         }
         case "infixExpression": {
-            const left = evaluate(node.left, ctx);
-            const right = evaluate(node.right, ctx);
+            const left = evaluate(node.left, env);
+            const right = evaluate(node.right, env);
             return evalInfixOperatorExpression(node.operator, left, right);
         }
         default:
@@ -64,11 +64,11 @@ export function evaluate(node: ast.Node, ctx: Context): obj.Object {
 
 
 
-function evalProgram(program: ast.Program, ctx: Context) {
+function evalProgram(program: ast.Program, env: Environment) {
     let result!: obj.Object;
 
     for (const statement of program.body) {
-        result = evaluate(statement, ctx);
+        result = evaluate(statement, env);
 
         if (result?.kind == "returnValue") {
             return result.value;
@@ -80,17 +80,17 @@ function evalProgram(program: ast.Program, ctx: Context) {
     return result;
 }
 
-function evalIdentifier(identifier: ast.Identifier, ctx: Context) {
-    const value = ctx.lookupVar(identifier.value);
+function evalIdentifier(identifier: ast.Identifier, env: Environment) {
+    const value = env.lookupVar(identifier.value);
     return value;
 
 }
 
-function evalBlockStatement(block: ast.BlockStatement, ctx: Context) {
+function evalBlockStatement(block: ast.BlockStatement, env: Environment) {
     let result!: obj.Object;
 
     for (const statement of block.statements) {
-        result = evaluate(statement, ctx);
+        result = evaluate(statement, env);
 
 
         if (result && result.kind == "returnValue") {
@@ -101,48 +101,48 @@ function evalBlockStatement(block: ast.BlockStatement, ctx: Context) {
     return result;
 }
 
-function evalExpressions(expressions: ast.Expression[], ctx: Context) {
+function evalExpressions(expressions: ast.Expression[], env: Environment) {
     // @TODO: Handle errors
-    return expressions.map(expr => evaluate(expr, ctx));
+    return expressions.map(expr => evaluate(expr, env));
 }
 
-function evalVariableDeclaration(varDeclaration: ast.VariableDeclaration, ctx: Context) {
+function evalVariableDeclaration(varDeclaration: ast.VariableDeclaration, env: Environment) {
     let val: obj.Object | undefined;
 
     if (varDeclaration.value) {
-        val = evaluate(varDeclaration.value, ctx);
+        val = evaluate(varDeclaration.value, env);
     }
 
-    return ctx.declareVar(varDeclaration.identifier.value, val);
+    return env.declareVar(varDeclaration.identifier.value, val);
 }
 
-function evalFunctionDeclaration(functionDec: ast.FunctionDeclaration, ctx: Context) {
+function evalFunctionDeclaration(functionDec: ast.FunctionDeclaration, env: Environment) {
     const { identifier, parameters, body } = functionDec;
 
-    const functionDecObj = obj.functionDec(identifier, parameters, body, ctx);
-    ctx.declareVar(identifier.value, functionDecObj);
+    const functionDecObj = obj.functionDec(identifier, parameters, body, env);
+    env.declareVar(identifier.value, functionDecObj);
 
     return functionDecObj;
 }
 
-function evalMemberExpression(memberExpr: ast.MemberExpression, ctx: Context) {
-    const left = evaluate(memberExpr.left, ctx);
+function evalMemberExpression(memberExpr: ast.MemberExpression, env: Environment) {
+    const left = evaluate(memberExpr.left, env);
     
     if (left.kind === "objectLiteral") {
-        return evalObjectMemberExpression(left, memberExpr.index, ctx);
+        return evalObjectMemberExpression(left, memberExpr.index, env);
     }
 
     if (left.kind === "arrayLiteral") {
-        return evalArrayMemberExpression(left, memberExpr.index, ctx);
+        return evalArrayMemberExpression(left, memberExpr.index, env);
     }
 
     // @TODO: This is NOT how JavaScript handles this, but it will do for now
     throw `Cannot use member expression on ${left.kind}`;    
 }
 
-function evalObjectMemberExpression(objLiteral: obj.ObjectLiteral, keyExpression: ast.Expression, ctx: Context) {
+function evalObjectMemberExpression(objLiteral: obj.ObjectLiteral, keyExpression: ast.Expression, env: Environment) {
 
-    const key = evaluate(keyExpression, ctx);
+    const key = evaluate(keyExpression, env);
 
     if (key.kind !== "string") {
         // @TODO: This is NOT how JavaScript handles this, but it will do for now
@@ -155,11 +155,11 @@ function evalObjectMemberExpression(objLiteral: obj.ObjectLiteral, keyExpression
         return obj.UNDEFINED;
     }
 
-    return evaluate(matchingProp.value, ctx);
+    return evaluate(matchingProp.value, env);
 }
 
-function evalArrayMemberExpression(arrayLiteral: obj.ArrayLiteral, indexExpression: ast.Expression, ctx: Context) {
-    const indexObj = evaluate(indexExpression, ctx);
+function evalArrayMemberExpression(arrayLiteral: obj.ArrayLiteral, indexExpression: ast.Expression, env: Environment) {
+    const indexObj = evaluate(indexExpression, env);
     
     if (indexObj.kind !== "integer") {
         // @TODO: Make sure floats, (i.e, non-integer numbers) can't end up here
@@ -172,10 +172,10 @@ function evalArrayMemberExpression(arrayLiteral: obj.ArrayLiteral, indexExpressi
         return obj.UNDEFINED;
     }
 
-    return evaluate(foundExpression, ctx);
+    return evaluate(foundExpression, env);
 }
 
-function evalAssignmentExpression(node: ast.AssignmentExpression, ctx: Context) {
+function evalAssignmentExpression(node: ast.AssignmentExpression, env: Environment) {
     const { operator, left, right } = node;
 
     if (operator != "=") {
@@ -186,14 +186,14 @@ function evalAssignmentExpression(node: ast.AssignmentExpression, ctx: Context) 
         // ident = ast.Expression
         case "identifier":
             const varName = left.value;
-            const rightVal = evaluate(right, ctx);
-            ctx.assignVar(varName, rightVal);
+            const rightVal = evaluate(right, env);
+            env.assignVar(varName, rightVal);
             return rightVal;
         case "memberExpression":
-            const varName2 = evaluate(left, ctx);
+            const varName2 = evaluate(left, env);
             console.log('varName2 :: ', varName2);
             //const key = left.index;
-            const rightVal2 = evaluate(right, ctx);
+            const rightVal2 = evaluate(right, env);
             return rightVal2;
         default:
             throw(`
@@ -207,7 +207,7 @@ function evalAssignmentExpression(node: ast.AssignmentExpression, ctx: Context) 
     // indent[0] = ast.Expression
     // ident['key'] = ast.Expression
     // ident.key = ast.Expression
-    //const varName = evaluate(left, ctx);
+    //const varName = evaluate(left, env);
 
     /*
     if (varName.kind !== "string") {
@@ -216,13 +216,13 @@ function evalAssignmentExpression(node: ast.AssignmentExpression, ctx: Context) 
     */    
 }
 
-function evalIfExpression(ifExpr: ast.IfExpression, ctx: Context) {
-    const condition = evaluate(ifExpr.condition, ctx);
+function evalIfExpression(ifExpr: ast.IfExpression, env: Environment) {
+    const condition = evaluate(ifExpr.condition, env);
 
     if (isTruthy(condition)) {
-        return evaluate(ifExpr.consequence, ctx);
+        return evaluate(ifExpr.consequence, env);
     } else if (ifExpr.alternative) {
-        return evaluate(ifExpr.alternative, ctx);
+        return evaluate(ifExpr.alternative, env);
     } else {
         return obj.NULL;
     }
@@ -332,7 +332,7 @@ function extendFunctionEnv(
     fn: obj.FunctionExpr | obj.FunctionDec,
     args: obj.Object[]
 ) {
-    const env = new Context(fn.env);
+    const env = new Environment(fn.env);
 
     fn.parameters.forEach((param, paramIdx) => {
         env.declareVar(param.value, args[paramIdx]);
