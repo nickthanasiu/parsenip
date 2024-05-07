@@ -47,13 +47,33 @@ export enum TokenType {
   }
 
 
-  
 export interface Position {
   start: number;
   end: number;
 }
 
 export const DEFAULT_POSITION: Position = { start: -1, end: -1 };
+
+export class PositionHelper implements Position {
+
+  start: number; end: number;
+  testMode: boolean;
+
+  constructor({ testMode }: { testMode: boolean }) {
+    this.start = DEFAULT_POSITION.start;
+    this.end = DEFAULT_POSITION.end;
+    this.testMode = testMode;
+  }
+
+  public setPosition({ start, end }: Position): Position {
+    if (!this.testMode) {
+      this.start = start;
+      this.end = end;
+    }
+
+    return { start: this.start, end: this.end };
+  }
+}
 
 export interface Token {
   type: TokenType;

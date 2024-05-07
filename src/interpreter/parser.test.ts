@@ -2,25 +2,6 @@ import * as ast from "./ast";
 import { parse } from "./parser";
 
 
-function ignorePosition(a: ast.Node) {
-    if (typeof a === "object") {
-        // Array
-        if (Array.isArray(a)) {
-            a.every(el => ignorePosition(el));
-        }
-
-        // Object
-        for (const val of Object.values(a)) {
-            ignorePosition(val);
-        }
-    }
-
-
-    if (a && a.start != undefined && a.end != undefined) {
-        a.start = a.end = -1;
-    }
-}
-
 test('Parse let statements', () => {
 
     const input = `
@@ -38,9 +19,9 @@ test('Parse let statements', () => {
         ast.variableDeclaration({ constant: false, identifier: ast.identifier("foobar"), value: ast.integerLiteral(838383) }),
     ]);
 
-    const [actual, _] = parse(input, { throwOnError: true });
+    const actual = testParse(input);
 
-    expect(ignorePosition(actual)).toEqual(ignorePosition(expected));
+    expect(actual).toEqual(expected);
 });
 
 
@@ -55,11 +36,9 @@ test('Parse const statements', () => {
         ast.variableDeclaration({ constant: false, identifier: ast.identifier("foo") }),
     ]);
 
-    const [actual, _] = parse(input, { throwOnError: true });
-
-    expect(ignorePosition(actual)).toEqual(ignorePosition(expected));
+    const actual = testParse(input);
+    expect(actual).toEqual(expected);
 });
-
 
 test('Parse return statements', () => {
     
@@ -79,9 +58,9 @@ test('Parse return statements', () => {
         ast.returnStatement(ast.booleanLiteral(false)),
     ]);
 
-    const [actual, _] = parse(input, { throwOnError: true });
+    const actual = testParse(input);
 
-    expect(ignorePosition(actual)).toStrictEqual(ignorePosition(expected));
+    expect(actual).toStrictEqual(expected);
 });
 
 test('Parse integer literals', () => {
@@ -90,9 +69,9 @@ test('Parse integer literals', () => {
     ]);
 
     const input = "5";
-    const [actual, _] = parse(input, { throwOnError: true });
+    const actual = testParse(input);
 
-    expect(ignorePosition(actual)).toStrictEqual(ignorePosition(expected));
+    expect(actual).toStrictEqual(expected);
 });
 
 
@@ -134,13 +113,7 @@ test('Parse prefix expressions', () => {
         "!false;",
     ];
     
-    const actual = inputs.map(input => {
-        const [program, _] = parse(input, { throwOnError: true });
-        return program;
-    });
-
-    expected.forEach(ignorePosition);
-    actual.forEach(ignorePosition);
+    const actual = inputs.map(testParse);
     
     expect(actual).toStrictEqual(expected);
 });
@@ -162,12 +135,19 @@ test('Parse infix expressions', () => {
     })
 
     const actual = operators.map(operator => {
-        const [program, _] = parse(`5 ${operator} 5;`, { throwOnError: true });
-        return program;
+        return testParse(`5 ${operator} 5;`);
     });
-
-    expected.forEach(ignorePosition);
-    actual.forEach(ignorePosition);
 
     expect(actual).toStrictEqual(expected);
 });
+
+function testParse(input: string): ast.Program {
+    const [program, _] = parse(input, { throwOnError: true, testMode: true });
+
+    if (!program) {
+      throw new Error(`Could not parse: ${input}`);
+    }
+  
+    return program;
+  }
+

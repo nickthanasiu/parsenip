@@ -1,4 +1,4 @@
-import { Position, DEFAULT_POSITION } from "./token";
+import { DEFAULT_POSITION, Position } from "./token";
 
 export type Node = Expression | Statement | Program;
 
@@ -43,10 +43,10 @@ export interface StringLiteral extends Position {
     value: string;
 }
 
-export const stringLiteral = (props: WithoutType<StringLiteral>): StringLiteral => ({
+export const stringLiteral = (value: string, position: Position = DEFAULT_POSITION): StringLiteral => ({
     type: "stringLiteral",
-    value: props.value,
-    ...positionFromProps(props)
+    value,
+    ...position
 });
 
 export interface IntegerLiteral extends Position {
@@ -68,11 +68,11 @@ export interface BooleanLiteral extends Position {
 }
 
 
-export function booleanLiteral(value: boolean, position?: Position): BooleanLiteral {
+export function booleanLiteral(value: boolean, position: Position = DEFAULT_POSITION): BooleanLiteral {
     return {
         type: "booleanLiteral",
         value,
-        ...(position || DEFAULT_POSITION)
+        ...position
     }
 }
 
@@ -226,11 +226,13 @@ export const functionExpression = (props: WithoutType<FunctionExpression>): Func
     end: props.end
 });
 
-export interface CallExpression extends Position {
+export type CallExpression = WithPosition<{
     type: "callExpression";
     function: Expression;
     arguments: Expression[];
-}
+}>;
+
+type WithPosition<T> = T & Position;
 
 function positionFromProps(props: WithoutType<Node>): Position {
     const { start, end } = props;
@@ -303,10 +305,10 @@ export interface ReturnStatement extends Position {
     returnValue: Expression;
 }
 
-export function returnStatement(expression: Expression, position?: Position): ReturnStatement {
+export function returnStatement(expression: Expression, position: Position = DEFAULT_POSITION): ReturnStatement {
     return {
         type: "returnStatement",
-        ...(position || DEFAULT_POSITION),
+        ...position,
         returnValue: expression
     };
 }
@@ -316,10 +318,10 @@ export interface ExpressionStatement extends Position {
     expression: Expression;
 }
 
-export function expressionStatement(expression: Expression, position?: Position): ExpressionStatement {
+export function expressionStatement(expression: Expression, position: Position = DEFAULT_POSITION): ExpressionStatement {
     return {
         type: "expressionStatement",
-        ...(position || DEFAULT_POSITION),
+        ...position,
         expression
     }
 }
@@ -354,7 +356,7 @@ export interface Program extends Position {
     body: Statement[];
 }
 
-export function program(statements: Statement[] = [], position: Position = { start: -1, end: -1 }): Program {
+export function program(statements: Statement[] = [], position: Position = DEFAULT_POSITION): Program {
     return {
         type: "program",
         body: statements,

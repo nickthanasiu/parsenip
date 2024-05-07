@@ -1,7 +1,6 @@
 import { Lexer } from "./lexer";
 import * as ast from "./ast";
-import { Token, TokenType } from "./token";
-
+import { Token, TokenType, Position, PositionHelper } from "./token";
 
 enum Precedence {
     LOWEST = 0,
@@ -13,7 +12,7 @@ enum Precedence {
     PREFIX,
     CALL,
     INDEX,
-}
+};
 
 const precedences = new Map<TokenType, Precedence>([
     [TokenType.EQ, Precedence.EQUALS],
@@ -39,7 +38,8 @@ export interface Parser {
    currToken: Token;
    peekToken: Token;
    errors: string[];
-}
+   testMode: boolean;
+};
 
 export class Parser implements Parser {
 
@@ -73,11 +73,17 @@ export class Parser implements Parser {
         [TokenType.ASSIGN, this.parseAssignmentExpression],
     ]);
 
-    constructor(lexer: Lexer) {
+    constructor({ lexer, testMode }: { lexer: Lexer; testMode?: boolean }) {
         this.lexer = lexer;
         this.currToken = lexer.nextToken();
         this.peekToken  = lexer.nextToken();
         this.errors = [];
+        this.testMode = testMode || false;
+    }
+
+    private createPosition(position: Position) {
+        const pos = new PositionHelper({ testMode: this.testMode });
+        return pos.setPosition(position);
     }
 
     private nextToken() {
@@ -86,8 +92,8 @@ export class Parser implements Parser {
     }
 
     public parseProgram() {
-
         const start = this.currToken.position.start;
+
         const statements: ast.Statement[] = [];
 
         while (!this.currTokenIs(TokenType.EOF)) {
@@ -101,14 +107,12 @@ export class Parser implements Parser {
             this.nextToken();
         }
 
-        return ast.program(statements, {
-            start,
-            end: this.currToken.position.end
-        });
+        return ast.program(statements, this.createPosition({
+            start, end: this.currToken.position.end,
+        }));
     }
 
     private parseStatement() {
-
 
         switch (this.currToken.type) {
             case TokenType.LET:
@@ -127,6 +131,7 @@ export class Parser implements Parser {
     // (let | const) IDENT = EXPRESSION;
     private parseVariableDeclaration() {
         const start = this.currToken.position.start;
+
         const isConstant = this.currTokenIs(TokenType.CONST);
 
         if (!this.expectPeek(TokenType.IDENT)) {
@@ -135,12 +140,10 @@ export class Parser implements Parser {
             return null;
         }
 
-
         const identifier = ast.identifier(
             this.currToken.literal,
-            this.currToken.position
+            this.createPosition(this.currToken.position)
         );
-
 
         if (this.expectPeek(TokenType.SEMICOLON)) {
             if (isConstant) {
@@ -151,7 +154,7 @@ export class Parser implements Parser {
             return ast.variableDeclaration({
                 constant: isConstant,
                 identifier,
-                position: { start, end: this.currToken.position.end }
+                position: this.createPosition({ start, end: this.currToken.position.end })
             });
         }
 
@@ -173,7 +176,7 @@ export class Parser implements Parser {
             constant: isConstant,
             identifier,
             value,
-            position: { start, end: this.currToken.position.end },
+            position: this.createPosition({ start, end: this.currToken.position.end }),
         });
     }
 
@@ -185,7 +188,7 @@ export class Parser implements Parser {
             return null;
         }
 
-        const identifier = ast.identifier(this.currToken.literal, this.currToken.position);
+        const identifier = ast.identifier(this.currToken.literal, this.createPosition(this.currToken.position));
 
         if (!this.expectPeek(TokenType.LPAREN)) {
             this.errors.push(`Expected ( following identifier in function declaration`);
@@ -200,13 +203,13 @@ export class Parser implements Parser {
         }
 
         const body = this.parseBlockStatement();
+        const position = this.createPosition({ start, end: this.currToken.position.end });
 
         return ast.functionDeclaration({
             identifier,
             parameters,
             body,
-            start,
-            end: this.currToken.position.end
+            ...position
         });
     }
 
@@ -226,10 +229,10 @@ export class Parser implements Parser {
             return null;
         }
         
-        return ast.returnStatement(expression, {
+        return ast.returnStatement(expression, this.createPosition({
             start,
             end: this.currToken.position.end
-        });
+        }));
     }
 
     private parseExpressionStatement() {
@@ -242,10 +245,10 @@ export class Parser implements Parser {
             this.nextToken();
         }
         
-        return ast.expressionStatement(expression, {
+        return ast.expressionStatement(expression, this.createPosition({
             start,
             end: this.currToken.position.end
-        });
+        }));
     }
 
     private parseExpression(precedence: Precedence = Precedence.LOWEST) {
@@ -286,7 +289,7 @@ export class Parser implements Parser {
             }
 
             const keyToken = this.currToken;
-            const key = ast.identifier(keyToken.literal, keyToken.position);
+            const key = ast.identifier(keyToken.literal, this.createPosition(keyToken.position));
             const property = ast.property(key, key); // Until we explictly define a value for the key, we can just assume that the key and value are the same (e.g., { foo, } )
 
             this.nextToken();
@@ -325,10 +328,10 @@ export class Parser implements Parser {
             return null;
         }
 
-        return ast.objectLiteral(properties, {
+        return ast.objectLiteral(properties, this.createPosition({
             start,
             end: this.currToken.position.end
-        });
+        }));
     }
 
 
@@ -340,10 +343,13 @@ export class Parser implements Parser {
         
         if (this.peekTokenIs(TokenType.RBRACKET)) {
             this.nextToken();
+            const position = this.createPosition({
+                start, end: this.currToken.position.end
+            });
+
             return ast.arrayLiteral({
                 elements,
-                start,
-                end: this.currToken.position.end
+                ...position
             });
         }
 
@@ -361,10 +367,13 @@ export class Parser implements Parser {
             return null;
         }
 
+        const position = this.createPosition({
+            start, end: this.currToken.position.end
+        });
+
         return ast.arrayLiteral({
             elements,
-            start,
-            end: this.currToken.position.end
+            ...position
         });
     }
 
@@ -381,10 +390,10 @@ export class Parser implements Parser {
         return ast.prefixExpression({
             operator: prefixOperator,
             right,
-            position: {
+            position: this.createPosition({
                 start,
                 end: this.currToken.position.end
-            }
+            })
         });
     }
 
@@ -401,10 +410,10 @@ export class Parser implements Parser {
             left,
             operator,
             right,
-            position: {
+            position: this.createPosition({
                 start,
                 end: this.currToken.position.end
-            }
+            })
         });
     }
 
@@ -443,12 +452,15 @@ export class Parser implements Parser {
             alternative = this.parseBlockStatement();
         }
 
+        const position = this.createPosition({
+            start, end: this.currToken.position.end
+        });
+
         return ast.ifExpression({
             condition,
             consequence,
             alternative,
-            start,
-            end: this.currToken.position.end
+            ...position
         });
     }
 
@@ -470,9 +482,9 @@ export class Parser implements Parser {
         }
 
 
-        return ast.blockStatement(blockStatements, {
+        return ast.blockStatement(blockStatements, this.createPosition({
             start, end: this.currToken.position.end,
-        })
+        }));
     }
 
     private parseFunctionExpression() {
@@ -491,12 +503,14 @@ export class Parser implements Parser {
         }
 
         const body = this.parseBlockStatement();
+        const position = this.createPosition({
+            start, end: this.currToken.position.end
+        });
 
         const functionExpression = ast.functionExpression({
             parameters,
             body,
-            start,
-            end: this.currToken.position.end
+            ...position
         });
 
         return functionExpression;
@@ -508,7 +522,11 @@ export class Parser implements Parser {
         this.nextToken();
 
         while (!this.currTokenIs(TokenType.RPAREN)) {
-            const ident = ast.identifier(this.currToken.literal, this.currToken.position);
+            const ident = ast.identifier(
+                this.currToken.literal,
+                this.createPosition(this.currToken.position)
+            );
+
             identifiers.push(ident);
             this.nextToken();
 
@@ -532,24 +550,32 @@ export class Parser implements Parser {
         this.nextToken();
 
         const right = this.parseExpression() as ast.Expression;
-        return ast.assignmentExpression(operator, left, right, { start, end: this.currToken.position.end });
+        return ast.assignmentExpression(
+            operator,
+            left,
+            right,
+            this.createPosition({ start, end: this.currToken.position.end })
+        );
     }
 
     private parseIdentifier() {
         return ast.identifier(
             this.currToken.literal,
-            this.currToken.position
+            this.createPosition(this.currToken.position)
         );
     }
 
     private parseCallExpression(fn: ast.Expression) {
         const args = this.parseArguments();
 
+        const position = this.createPosition({
+            start: fn.start, end: this.currToken.position.end
+        });
+
         return ast.callExpression({
             function: fn,
             arguments: args,
-            start: fn.start,
-            end: this.currToken.position.end
+            ...position
         })
     }
 
@@ -584,16 +610,17 @@ export class Parser implements Parser {
         }
 
 
-        return ast.memberExpression(left, index, { start, end: this.currToken.position.end });
+        return ast.memberExpression(
+            left,
+            index,
+            this.createPosition({ start, end: this.currToken.position.end })
+        );
     }
 
     private parseStringLiteral() {
         const { literal, position } = this.currToken;
 
-        return ast.stringLiteral({
-            value: literal,
-            ...position
-        });
+        return ast.stringLiteral(literal, this.createPosition(position));
     }
 
     private parseIntegerLiteral() {
@@ -606,13 +633,16 @@ export class Parser implements Parser {
             return null;
         }
 
-        return ast.integerLiteral(int, { start, end: this.currToken.position.end}); 
+        return ast.integerLiteral(
+            int,
+            this.createPosition({ start, end: this.currToken.position.end })
+        );
     }
 
     private parseBooleanLiteral() {
         return ast.booleanLiteral(
             this.currTokenIs(TokenType.TRUE),
-            this.currToken.position
+            this.createPosition(this.currToken.position)
         );
     }
 
@@ -683,11 +713,12 @@ export class Parser implements Parser {
 
 interface ParseOptions {
     throwOnError?: boolean;
+    testMode?: boolean;
 }
 
-export function parse(input: string, { throwOnError }: ParseOptions = {}) {
+export function parse(input: string, { throwOnError, testMode }: ParseOptions = {}) {
     const lexer = new Lexer(input);
-    const parser = new Parser(lexer);
+    const parser = new Parser({ lexer, testMode });
 
     const program = parser.parseProgram();
     const errors = checkParserErrors(parser, !!throwOnError);

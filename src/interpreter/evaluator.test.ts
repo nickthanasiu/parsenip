@@ -1,6 +1,7 @@
 import { Environment } from "./environment";
 import { evaluate } from "./evaluator";
 import * as obj from "./object";
+import * as ast from "./ast";
 import { Lexer } from "./lexer";
 import { Parser } from "./parser";
 
@@ -19,7 +20,6 @@ test(`variable declarations`, () => {
     //`let x = undefined;`, @TODO: Handle undefined as a keyword
     `const x = true;`,
     `let x = false;`,
-    `const x = { foo: "bar" };`,
   ];
     
   const actual = testCases.map(testEval);
@@ -37,19 +37,26 @@ test(`variable declarations`, () => {
     //obj.UNDEFINED,
     obj.boolean(true),
     obj.boolean(false),
-
-    /*
-    obj.objectLiteral([
-      ast.property(
-        ast.identifier("foo", { start: 0, end: 0 }),
-        ast.stringLiteral({ value: "bar", start: 0, end: 0 })
-      )
-    ]),
-    */
   ];
 
   expect(actual).toEqual(expected);
 });
+
+
+test('variable declaration of object literal', () => {
+  const testCase = `const x = { foo: "bar" };`
+  const actual = testEval(testCase);
+
+  const expected = obj.objectLiteral([
+    ast.property(
+      ast.identifier("foo"),
+      ast.stringLiteral("bar")
+    )
+  ]);
+
+  expect(actual).toEqual(expected);
+});
+
 
 
 test(`retrieve value of key from object literal`, () => {
@@ -139,8 +146,11 @@ test(`Handle object['key'] = val assignment`, () => {
 
 
 function testEval(input: string): obj.Object {
-  const l = new Lexer(input);
-  const p = new Parser(l);
+  const p = new Parser({
+    lexer: new Lexer(input),
+    testMode: true
+  });
+
   if (p.errors.length !== 0) {
     p.errors.forEach(console.error);
   }
