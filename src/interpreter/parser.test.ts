@@ -141,6 +141,44 @@ test('Parse infix expressions', () => {
     expect(actual).toStrictEqual(expected);
 });
 
+test('Parse objectLiteral memberExpression assignment', () => {
+    const input = `
+        const user = { name: 'Steve' };
+        user["email"] = "steve@email.com";
+    `;
+
+
+
+    const actual = testParse(input);
+
+    const expected = ast.program([
+        ast.variableDeclaration({
+            constant: true,
+            identifier: ast.identifier("user"),
+            value: ast.objectLiteral([
+                ast.property({
+                    key: ast.identifier("name"),
+                    value: ast.stringLiteral("Steve")
+                })
+            ])
+        }),
+        ast.expressionStatement(
+            ast.assignmentExpression({
+                left: ast.memberExpression({
+                    left: ast.identifier("user"),
+                    index: ast.stringLiteral("email")
+                }),
+                operator: "=",
+                right: ast.stringLiteral("steve@email.com")
+            })
+        )
+        
+    ]);
+
+    expect(actual).toEqual(expected);
+});
+
+
 function testParse(input: string): ast.Program {
     const [program, _] = parse(input, { throwOnError: true, testMode: true });
 

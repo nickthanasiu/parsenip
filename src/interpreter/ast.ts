@@ -82,13 +82,14 @@ export interface Property extends Position {
     value?: Expression
 }
 
-export function property(key: Identifier, value?: Expression): Property {
+
+export function property(props: { key: Identifier, value?: Expression, position?: Position }): Property {
+    const { key, value, position } = props;
     return {
         type: "property",
-        start: key.start,
-        end: value?.end ?? key.end,
         key,
         value,
+        ...(position || DEFAULT_POSITION)
     }
 }
 
@@ -97,7 +98,7 @@ export interface ObjectLiteral extends Position {
     properties: Property[]
 }
 
-export function objectLiteral(properties: Property[], position: Position): ObjectLiteral {
+export function objectLiteral(properties: Property[], position: Position = DEFAULT_POSITION): ObjectLiteral {
     return {
         type: "objectLiteral",
         ...position,
@@ -122,12 +123,13 @@ export interface MemberExpression extends Position {
     index: Expression
 }
 
-export function memberExpression(left: Expression, index: Expression, position: Position): MemberExpression {
+export function memberExpression(props: {left: Expression, index: Expression, position?: Position}): MemberExpression {
+    const { left, index, position } = props;
     return {
         type: "memberExpression",
-        ...position,
         left,
         index,
+        ...(position || DEFAULT_POSITION),
     }
 }
 
@@ -138,18 +140,19 @@ export interface AssignmentExpression extends Position {
     right: Expression;
 }
 
-export function assignmentExpression(
+export function assignmentExpression(props: {
     operator: "=",
     left: Expression,
     right: Expression,
-    position: Position
-): AssignmentExpression {
+    position?: Position
+}): AssignmentExpression {
+    const { operator, left, right, position } = props;
     return {
         type: "assignmentExpression",
         operator,
         left,
         right,
-        ...position
+        ...(position || DEFAULT_POSITION)
     };
 }
 

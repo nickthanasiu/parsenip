@@ -287,10 +287,15 @@ export class Parser implements Parser {
                 this.errors.push(`Expected key of ObjectLiteral to be an identifier, but found token of type ${this.peekToken.type}`);
                 return null;
             }
+            
 
             const keyToken = this.currToken;
             const key = ast.identifier(keyToken.literal, this.createPosition(keyToken.position));
-            const property = ast.property(key, key); // Until we explictly define a value for the key, we can just assume that the key and value are the same (e.g., { foo, } )
+            let property = ast.property({ 
+                key,
+                value: key, // Until we explictly define a value for the key, we can just assume that the key and value are the same (e.g., { foo, } )
+                position: this.createPosition({ start: key.start, end: key.end })
+            });
 
             this.nextToken();
 
@@ -309,7 +314,17 @@ export class Parser implements Parser {
             }
 
             this.nextToken();
-            property.value = this.parseExpression() as ast.Expression;
+
+            const value = this.parseExpression() as ast.Expression;
+            property = ast.property({
+                key,
+                value,
+                position: this.createPosition({
+                    start: property.key.start,
+                    end: value.end
+                })
+            });
+
             properties.push(property);
 
             // Move past value IDENT token
@@ -550,12 +565,12 @@ export class Parser implements Parser {
         this.nextToken();
 
         const right = this.parseExpression() as ast.Expression;
-        return ast.assignmentExpression(
+        return ast.assignmentExpression({
             operator,
             left,
             right,
-            this.createPosition({ start, end: this.currToken.position.end })
-        );
+            position: this.createPosition({ start, end: this.currToken.position.end })
+        });
     }
 
     private parseIdentifier() {
@@ -610,11 +625,11 @@ export class Parser implements Parser {
         }
 
 
-        return ast.memberExpression(
+        return ast.memberExpression({
             left,
             index,
-            this.createPosition({ start, end: this.currToken.position.end })
-        );
+            position: this.createPosition({ start, end: this.currToken.position.end })
+        });
     }
 
     private parseStringLiteral() {
