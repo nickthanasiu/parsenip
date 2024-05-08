@@ -48,10 +48,10 @@ test('variable declaration of object literal', () => {
   const actual = testEval(testCase);
 
   const expected = obj.objectLiteral([
-    ast.property(
-      ast.identifier("foo"),
-      ast.stringLiteral("bar")
-    )
+    ast.property({
+      key: ast.identifier("foo"),
+      value: ast.stringLiteral("bar")
+    })
   ]);
 
   expect(actual).toEqual(expected);
@@ -119,30 +119,34 @@ test(`handle variable assignment using identifier (i.e., someIdent = someValue;)
   expect(evaluated).toEqual(expected);
 });
 
-/*
+
 test(`Handle object['key'] = val assignment`, () => {
   const testCases = [
     `
-      const person = {};
-      person["name"] = "Nick";
+      const person = { name: "Steve" };
+      person["age"] = 50;
     `,
     `
-      const person = {};
-      person["name"] = "Nick";
-      person["name"];
+      const person = { name: "Steve" };
+      person["age"] = 50;
+      person["age"];
     `,
+    `
+      const person = { name: "Steve" };
+      person["name"] = "Mark";
+      person["name"];
+    `
 ];
 
   const evaluated = testCases.map(testEval);
   const expected = [
-    obj.string("Nick"),
-    obj.string("Nick"),
+    obj.integer(50),
+    obj.integer(50),
+    obj.string("Mark")
   ];
 
   expect(evaluated).toEqual(expected);
 });
-
-*/
 
 
 function testEval(input: string): obj.Object {

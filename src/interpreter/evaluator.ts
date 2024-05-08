@@ -183,18 +183,43 @@ function evalAssignmentExpression(node: ast.AssignmentExpression, env: Environme
     }
 
     switch (left.type) {
-        // ident = ast.Expression
         case "identifier":
-            const varName = left.value;
             const rightVal = evaluate(right, env);
-            env.assignVar(varName, rightVal);
+            env.assignVar(left.value, rightVal);
             return rightVal;
         case "memberExpression":
-            const varName2 = evaluate(left, env);
-            console.log('varName2 :: ', varName2);
-            //const key = left.index;
-            const rightVal2 = evaluate(right, env);
-            return rightVal2;
+            const memberExpr = left;
+
+            if (memberExpr.left.type !== "identifier") {
+                throw (`Only handles identifiers for now...`);
+            }
+
+            const obj = env.lookupVar(memberExpr.left.value);
+
+            if (obj.kind !== "objectLiteral") {
+                throw `Only handles objectLiterals for now...`;
+            }
+
+            const key = evaluate(memberExpr.index, env);
+            if (key.kind !== "string") {
+                throw `Key should be string. Received ${key.kind}`;
+            }
+
+            const properties = obj.properties;
+            const prop = properties.find(p => p.key.value === key.value);
+            const index = prop
+                ? properties.indexOf(prop)
+                : properties.length;
+
+                
+            properties[index] = ast.property({
+                key: ast.identifier(key.value),
+                value: right
+            });
+            
+            env.assignVar(memberExpr.left.value, obj);
+
+            return evaluate(right, env);
         default:
             throw(`
                 evalAssignmentExpression: Invalid left side of assignmentExpression: "${left.type}"
