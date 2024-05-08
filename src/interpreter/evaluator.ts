@@ -189,37 +189,56 @@ function evalAssignmentExpression(node: ast.AssignmentExpression, env: Environme
             return rightVal;
         case "memberExpression":
             const memberExpr = left;
-
+            
             if (memberExpr.left.type !== "identifier") {
                 throw (`Only handles identifiers for now...`);
             }
 
-            const obj = env.lookupVar(memberExpr.left.value);
+            const varName = memberExpr.left.value;
+            const found = env.lookupVar(memberExpr.left.value);
 
-            if (obj.kind !== "objectLiteral") {
+            if (found.kind !== "objectLiteral" && found.kind !== "arrayLiteral") {
                 throw `Only handles objectLiterals for now...`;
             }
 
-            const key = evaluate(memberExpr.index, env);
-            if (key.kind !== "string") {
-                throw `Key should be string. Received ${key.kind}`;
+            if (!found) {
+                throw `${memberExpr.left.value} not defined.`;
             }
 
-            const properties = obj.properties;
-            const prop = properties.find(p => p.key.value === key.value);
-            const index = prop
-                ? properties.indexOf(prop)
-                : properties.length;
+            if (found.kind === "arrayLiteral") {
+                const arr = found;
+                const index = evaluate(memberExpr.index, env);
+                if (index.kind !== "integer") {
+                    throw `Index should be integer. Received ${index.kind}`; // @TODO: This is not how JavaScript actually does it. Should eventually add support for strings
+                }
 
+                arr.elements[index.value] = right;
+                env.assignVar(varName, arr);
+
+                return evaluate(right, env);
+            } else {
+                const obj = found;
+                const key = evaluate(memberExpr.index, env);
+                if (key.kind !== "string") {
+                    throw `Key should be string. Received ${key.kind}`;
+                }
+    
+                const properties = obj.properties;
+                const prop = properties.find(p => p.key.value === key.value);
+                const index = prop
+                    ? properties.indexOf(prop)
+                    : properties.length;
+    
+                    
+                properties[index] = ast.property({
+                    key: ast.identifier(key.value),
+                    value: right
+                });
                 
-            properties[index] = ast.property({
-                key: ast.identifier(key.value),
-                value: right
-            });
-            
-            env.assignVar(memberExpr.left.value, obj);
-
-            return evaluate(right, env);
+                env.assignVar(memberExpr.left.value, obj);
+    
+                return evaluate(right, env);
+            }
         default:
             throw(`
                 evalAssignmentExpression: Invalid left side of assignmentExpression: "${left.type}"

@@ -148,6 +148,28 @@ test(`Handle object['key'] = val assignment`, () => {
   expect(evaluated).toEqual(expected);
 });
 
+test(`Handle array[index] = val assignment`, () => {
+  const testCases = [
+    `
+      const letters = [];
+      letters[0] = "A";
+    `,
+    `
+      const letters = [];
+      letters[0] = "A";
+      letters[0];
+    `
+];
+
+  const evaluated = testCases.map(testEval);
+  const expected = [
+    obj.string("A"),
+    obj.string("A"),
+  ];
+
+  expect(evaluated).toEqual(expected);
+});
+
 
 function testEval(input: string): obj.Object {
   const p = new Parser({
