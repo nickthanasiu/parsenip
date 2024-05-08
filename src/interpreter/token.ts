@@ -25,6 +25,7 @@ export enum TokenType {
     OR = "OR",
   
     // Delimiters
+    DOT = "DOT",
     COMMA = "COMMA",
     COLON = "COLON",
     SEMICOLON = "SEMICOLON",

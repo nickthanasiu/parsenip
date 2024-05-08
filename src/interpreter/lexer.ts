@@ -116,6 +116,9 @@ export class Lexer implements Lexer {
           token = this.illegalToken({ start, end: this.position });
         }
         break;
+      case ".":
+        token = newToken(TokenType.DOT, ".", { start, end: this.position });
+        break;
       case ",":
         token = newToken(TokenType.COMMA, ",", { start, end: this.position });
         break;

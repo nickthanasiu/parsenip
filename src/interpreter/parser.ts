@@ -28,6 +28,7 @@ const precedences = new Map<TokenType, Precedence>([
     [TokenType.LPAREN, Precedence.CALL],
     [TokenType.LBRACKET, Precedence.INDEX],
     [TokenType.ASSIGN, Precedence.ASSIGN],
+    [TokenType.DOT, Precedence.INDEX],
 ]);
 
 type prefixParseFn = () => ast.Expression | null;
@@ -71,6 +72,7 @@ export class Parser implements Parser {
         [TokenType.LPAREN, this.parseCallExpression],
         [TokenType.LBRACKET, this.parseMemberExpression],
         [TokenType.ASSIGN, this.parseAssignmentExpression],
+        [TokenType.DOT, this.parseMemberExpression],
     ]);
 
     constructor({ lexer, testMode }: { lexer: Lexer; testMode?: boolean }) {
@@ -263,7 +265,7 @@ export class Parser implements Parser {
         let leftExp = prefixParseFn() as ast.Expression;
 
         while (
-            !this.peekTokenIs(TokenType.SEMICOLON) &&
+            !this.  peekTokenIs(TokenType.SEMICOLON) &&
             precedence < this.peekPrecedence()
         ) {
             const infixParseFn = this.infixParseFns.get(this.peekToken.type);
@@ -616,20 +618,35 @@ export class Parser implements Parser {
 
     private parseMemberExpression(left: ast.Expression) {
         const start = this.currToken.position.start;
-        this.nextToken();
-        const index = this.parseExpression() as ast.Expression;
+        if (this.currTokenIs(TokenType.DOT)) {
+            this.nextToken();
+            const index = this.parseExpression(Precedence.ASSIGN) as ast.Expression;
 
-        if (!this.expectPeek(TokenType.RBRACKET)) {
-            this.errors.push(`Expected ] at end of memberExpression`);
-            return null;
+            return ast.memberExpression({
+                left,
+                index,
+                position: this.createPosition({ start, end: this.currToken.position.end })
+            });
+
+        } else {
+
+            this.nextToken();
+    
+    
+            const index = this.parseExpression() as ast.Expression;
+    
+            if (!this.expectPeek(TokenType.RBRACKET)) {
+                this.errors.push(`Expected ] at end of memberExpression`);
+                return null;
+            }
+    
+    
+            return ast.memberExpression({
+                left,
+                index,
+                position: this.createPosition({ start, end: this.currToken.position.end })
+            });
         }
-
-
-        return ast.memberExpression({
-            left,
-            index,
-            position: this.createPosition({ start, end: this.currToken.position.end })
-        });
     }
 
     private parseStringLiteral() {

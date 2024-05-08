@@ -172,9 +172,30 @@ test('Parse objectLiteral memberExpression assignment', () => {
                 right: ast.stringLiteral("steve@email.com")
             })
         )
-        
     ]);
 
+    expect(actual).toEqual(expected);
+});
+
+test('objectLiteral dot operator assignment', () => {
+    const input = `
+        user.email = "steve@email.com";
+    `;
+
+    const expected = ast.program([
+        ast.expressionStatement(
+            ast.assignmentExpression({
+                left: ast.memberExpression({
+                    left: ast.identifier("user"),
+                    index: ast.identifier("email")
+                }),
+                operator: "=",
+                right: ast.stringLiteral("steve@email.com")
+            })
+        )
+    ]);
+
+    const actual = testParse(input);
     expect(actual).toEqual(expected);
 });
 
