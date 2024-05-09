@@ -5,6 +5,7 @@ import ParserPanel from "./ParserPanel";
 import { evaluate } from "../../interpreter/evaluator";
 import { parse } from "../../interpreter/parser";
 import { toString } from "../../interpreter/object";
+import { Environment } from "../../interpreter/environment";
 
 
 type TabName = 'tokens' | 'parser' | 'evaluate';
@@ -51,7 +52,8 @@ export default function ResultsPanels(props: Props) {
 
     function evaluateCode() {
         const [program, _] = parse(props.input);
-        const result = toString(evaluate(program));
+        const env = new Environment();
+        const result = toString(evaluate(program, env));
         setResult(result);
     }
 

@@ -151,7 +151,7 @@ export function toString(obj: Object) {
         case "objectLiteral":
             return JSON.stringify(obj);
         case "arrayLiteral":
-            return obj.elements;
+            return JSON.stringify(obj.elements);
         case "null":
             return "null";
         case "undefined":
