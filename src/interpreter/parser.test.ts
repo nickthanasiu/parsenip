@@ -1,9 +1,7 @@
+import * as ast from "./ast";
+import { parse } from "./parser";
 
-test('temp ', () => {
-    expect(true).toBe(!false);
-})
 
-/*
 test('Parse let statements', () => {
 
     const input = `
@@ -15,17 +13,16 @@ test('Parse let statements', () => {
     `;
 
     const expected = ast.program([
-        ast.variableDeclaration(false, ast.identifier("myVar")),
-        ast.variableDeclaration(false, ast.identifier("x"), ast.integerLiteral(5)),
-        ast.variableDeclaration(false, ast.identifier("y"), ast.integerLiteral(10)),
-        ast.variableDeclaration(false, ast.identifier("foobar"), ast.integerLiteral(838383)),
+        ast.variableDeclaration({ constant: false, identifier: ast.identifier("myVar")}),
+        ast.variableDeclaration({ constant: false, identifier: ast.identifier("x"), value: ast.integerLiteral(5) }),
+        ast.variableDeclaration({ constant: false, identifier: ast.identifier("y"), value: ast.integerLiteral(10) }),
+        ast.variableDeclaration({ constant: false, identifier: ast.identifier("foobar"), value: ast.integerLiteral(838383) }),
     ]);
 
-    const actual = parse(input, { throwOnError: true });
+    const actual = testParse(input);
 
-    expect(actual).toStrictEqual(expected);
+    expect(actual).toEqual(expected);
 });
-
 
 
 test('Parse const statements', () => {
@@ -35,13 +32,12 @@ test('Parse const statements', () => {
     `;
 
     const expected = ast.program([
-        ast.variableDeclaration(true, ast.identifier("myVar"), ast.integerLiteral(100)),
-        ast.variableDeclaration(false, ast.identifier("foo")),
+        ast.variableDeclaration({ constant: true, identifier: ast.identifier("myVar"), value: ast.integerLiteral(100) }),
+        ast.variableDeclaration({ constant: false, identifier: ast.identifier("foo") }),
     ]);
 
-    const actual = parse(input, { throwOnError: true });
-
-    expect(actual).toStrictEqual(expected);
+    const actual = testParse(input);
+    expect(actual).toEqual(expected);
 });
 
 test('Parse return statements', () => {
@@ -62,7 +58,7 @@ test('Parse return statements', () => {
         ast.returnStatement(ast.booleanLiteral(false)),
     ]);
 
-    const actual = parse(input, { throwOnError: true });
+    const actual = testParse(input);
 
     expect(actual).toStrictEqual(expected);
 });
@@ -73,10 +69,12 @@ test('Parse integer literals', () => {
     ]);
 
     const input = "5";
-    const actual = parse(input, { throwOnError: true });
+    const actual = testParse(input);
 
     expect(actual).toStrictEqual(expected);
 });
+
+
 
 test('Parse prefix expressions', () => {
     
@@ -84,40 +82,42 @@ test('Parse prefix expressions', () => {
         // !5;
         ast.program([
             ast.expressionStatement(
-                ast.prefixExpression("!", ast.integerLiteral(5))
+                ast.prefixExpression({ operator: "!", right: ast.integerLiteral(5)})
             ),
         ]),
         // -15
         ast.program([
             ast.expressionStatement(
-                ast.prefixExpression("-", ast.integerLiteral(15))
+                ast.prefixExpression({ operator: "-", right: ast.integerLiteral(15) })
             )
         ]),
         // !true
         ast.program([
             ast.expressionStatement(
-                ast.prefixExpression("!", ast.booleanLiteral(true))
+                ast.prefixExpression({ operator: "!", right: ast.booleanLiteral(true) })
             )
         ]),
         // !false
         ast.program([
             ast.expressionStatement(
-                ast.prefixExpression("!", ast.booleanLiteral(false))
+                ast.prefixExpression({ operator: "!", right: ast.booleanLiteral(false) })
             )
         ]),
     ];
 
+    
     const inputs = [
         "!5;",
         "-15;",
         "!true;",
         "!false;",
     ];
-
-    const actual = inputs.map(input => parse(input, { throwOnError: true }));
-
+    
+    const actual = inputs.map(testParse);
+    
     expect(actual).toStrictEqual(expected);
 });
+
 
 test('Parse infix expressions', () => {
     const operators = ["+", "-", "*", "/", ">", "<", "==", "!="];
@@ -125,18 +125,88 @@ test('Parse infix expressions', () => {
     const expected = operators.map(operator => {
         return ast.program([
             ast.expressionStatement(
-                ast.infixExpression(
-                    ast.integerLiteral(5),
+                ast.infixExpression({
+                    left: ast.integerLiteral(5),
                     operator,
-                    ast.integerLiteral(5),
-                )
+                    right: ast.integerLiteral(5),
+                })
             )
         ]);
     })
 
-    const actual = operators.map(operator => parse(`5 ${operator} 5;`, { throwOnError: true }));
+    const actual = operators.map(operator => {
+        return testParse(`5 ${operator} 5;`);
+    });
 
     expect(actual).toStrictEqual(expected);
 });
 
-*/
+test('Parse objectLiteral memberExpression assignment', () => {
+    const input = `
+        const user = { name: 'Steve' };
+        user["email"] = "steve@email.com";
+    `;
+
+
+
+    const actual = testParse(input);
+
+    const expected = ast.program([
+        ast.variableDeclaration({
+            constant: true,
+            identifier: ast.identifier("user"),
+            value: ast.objectLiteral([
+                ast.property({
+                    key: ast.identifier("name"),
+                    value: ast.stringLiteral("Steve")
+                })
+            ])
+        }),
+        ast.expressionStatement(
+            ast.assignmentExpression({
+                left: ast.memberExpression({
+                    left: ast.identifier("user"),
+                    index: ast.stringLiteral("email")
+                }),
+                operator: "=",
+                right: ast.stringLiteral("steve@email.com")
+            })
+        )
+    ]);
+
+    expect(actual).toEqual(expected);
+});
+
+test('objectLiteral dot operator assignment', () => {
+    const input = `
+        user.email = "steve@email.com";
+    `;
+
+    const expected = ast.program([
+        ast.expressionStatement(
+            ast.assignmentExpression({
+                left: ast.memberExpression({
+                    left: ast.identifier("user"),
+                    index: ast.identifier("email")
+                }),
+                operator: "=",
+                right: ast.stringLiteral("steve@email.com")
+            })
+        )
+    ]);
+
+    const actual = testParse(input);
+    expect(actual).toEqual(expected);
+});
+
+
+function testParse(input: string): ast.Program {
+    const [program, _] = parse(input, { throwOnError: true, testMode: true });
+
+    if (!program) {
+      throw new Error(`Could not parse: ${input}`);
+    }
+  
+    return program;
+  }
+

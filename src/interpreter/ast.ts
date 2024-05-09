@@ -1,4 +1,4 @@
-import { Position } from "./token";
+import { DEFAULT_POSITION, Position } from "./token";
 
 export type Node = Expression | Statement | Program;
 
@@ -13,11 +13,14 @@ export type Expression =
     | IfExpression
     | FunctionExpression
     | CallExpression
+    | MemberExpression
+    | AssignmentExpression
 
     // Literals
     | StringLiteral
     | IntegerLiteral
     | BooleanLiteral
+    | Property
     | ObjectLiteral
     | ArrayLiteral
 ;
@@ -27,7 +30,7 @@ export interface Identifier extends Position {
     value: string;
 };
 
-export function identifier(value: string, position: Position): Identifier {
+export function identifier(value: string, position: Position = DEFAULT_POSITION): Identifier {
     return {
         type: "identifier",
         value,
@@ -40,10 +43,10 @@ export interface StringLiteral extends Position {
     value: string;
 }
 
-export const stringLiteral = (args: ASTNodeParams<StringLiteral>): StringLiteral => ({
+export const stringLiteral = (value: string, position: Position = DEFAULT_POSITION): StringLiteral => ({
     type: "stringLiteral",
-    value: args.value,
-    ...positionFromArgs(args)
+    value,
+    ...position
 });
 
 export interface IntegerLiteral extends Position {
@@ -51,7 +54,7 @@ export interface IntegerLiteral extends Position {
     value: number;
 }
 
-export function integerLiteral(value: number, position: Position): IntegerLiteral {
+export function integerLiteral(value: number, position: Position = DEFAULT_POSITION): IntegerLiteral {
     return {
         type: "integerLiteral",
         value,
@@ -65,7 +68,7 @@ export interface BooleanLiteral extends Position {
 }
 
 
-export function booleanLiteral(value: boolean, position: Position): BooleanLiteral {
+export function booleanLiteral(value: boolean, position: Position = DEFAULT_POSITION): BooleanLiteral {
     return {
         type: "booleanLiteral",
         value,
@@ -79,13 +82,14 @@ export interface Property extends Position {
     value?: Expression
 }
 
-export function property(key: Identifier, value?: Expression): Property {
+
+export function property(props: { key: Identifier, value?: Expression, position?: Position }): Property {
+    const { key, value, position } = props;
     return {
         type: "property",
-        start: key.start,
-        end: value?.end ?? key.end,
         key,
         value,
+        ...(position || DEFAULT_POSITION)
     }
 }
 
@@ -94,7 +98,7 @@ export interface ObjectLiteral extends Position {
     properties: Property[]
 }
 
-export function objectLiteral(properties: Property[], position: Position): ObjectLiteral {
+export function objectLiteral(properties: Property[], position: Position = DEFAULT_POSITION): ObjectLiteral {
     return {
         type: "objectLiteral",
         ...position,
@@ -107,11 +111,50 @@ export interface ArrayLiteral extends Position {
     elements: Expression[];
 }
 
-export const arrayLiteral = (args: ASTNodeParams<ArrayLiteral>): ArrayLiteral => ({
+export const arrayLiteral = (props: WithoutType<ArrayLiteral>): ArrayLiteral => ({
     type: "arrayLiteral",
-    elements: args.elements,
-    ...positionFromArgs(args)
+    elements: props.elements,
+    ...positionFromProps(props)
 });
+
+export interface MemberExpression extends Position {
+    type: "memberExpression";
+    left: Expression;
+    index: Expression
+}
+
+export function memberExpression(props: {left: Expression, index: Expression, position?: Position}): MemberExpression {
+    const { left, index, position } = props;
+    return {
+        type: "memberExpression",
+        left,
+        index,
+        ...(position || DEFAULT_POSITION),
+    }
+}
+
+export interface AssignmentExpression extends Position {
+    type: "assignmentExpression";
+    operator: "="; // @TODO: Later on we may support other types of assignment operators such as +=, -=, etc.
+    left: Expression;
+    right: Expression;
+}
+
+export function assignmentExpression(props: {
+    operator: "=",
+    left: Expression,
+    right: Expression,
+    position?: Position
+}): AssignmentExpression {
+    const { operator, left, right, position } = props;
+    return {
+        type: "assignmentExpression",
+        operator,
+        left,
+        right,
+        ...(position || DEFAULT_POSITION)
+    };
+}
 
 export interface PrefixExpression extends Position {
     type: "prefixExpression";
@@ -119,12 +162,13 @@ export interface PrefixExpression extends Position {
     right: Expression;
 }
 
-export function prefixExpression(operator: string, right: Expression, position: Position): PrefixExpression {
+export function prefixExpression(props: {operator: string, right: Expression, position?: Position}): PrefixExpression {
+    const { operator, right, position } = props;
     return {
         type: "prefixExpression",
         operator,
         right,
-        ...position
+        ...(position || DEFAULT_POSITION)
     }
 }
 
@@ -135,17 +179,25 @@ interface InfixExpression extends Position {
     right: Expression;
 }
 
-export function infixExpression(left: Expression, operator: string, right: Expression, position: Position): InfixExpression {
+export function infixExpression(props: {
+    left: Expression,
+    operator: string,
+    right: Expression,
+    position?: Position
+}): InfixExpression {
+
+    const { left, operator, right, position } = props;
+
     return {
         type: "infixExpression",
         left,
         operator,
         right,
-        ...position
+        ...(position || DEFAULT_POSITION)
     };
 }
 
-type ASTNodeParams<T> = Omit<T, "type">;
+type WithoutType<T> = Omit<T, "type">;
 
 export interface IfExpression extends Position {
     type: "ifExpression";
@@ -154,13 +206,13 @@ export interface IfExpression extends Position {
     alternative?: BlockStatement;
 }
 
-export const ifExpression = (args: ASTNodeParams<IfExpression>): IfExpression => ({
+export const ifExpression = (props: WithoutType<IfExpression>): IfExpression => ({
     type: "ifExpression",
-    condition: args.condition,
-    consequence: args.consequence,
-    alternative: args.alternative,
-    start: args.start,
-    end: args.end
+    condition: props.condition,
+    consequence: props.consequence,
+    alternative: props.alternative,
+    start: props.start,
+    end: props.end
 });
 
 export interface FunctionExpression extends Position {
@@ -169,30 +221,32 @@ export interface FunctionExpression extends Position {
     body: BlockStatement;
 }
 
-export const functionExpression = (args: ASTNodeParams<FunctionExpression>): FunctionExpression => ({
+export const functionExpression = (props: WithoutType<FunctionExpression>): FunctionExpression => ({
     type: "functionExpression",
-    parameters: args.parameters,
-    body: args.body,
-    start: args.start,
-    end: args.end
+    parameters: props.parameters,
+    body: props.body,
+    start: props.start,
+    end: props.end
 });
 
-export interface CallExpression extends Position {
+export type CallExpression = WithPosition<{
     type: "callExpression";
     function: Expression;
     arguments: Expression[];
-}
+}>;
 
-function positionFromArgs(args: ASTNodeParams<Node>): Position {
-    const { start, end } = args;
+type WithPosition<T> = T & Position;
+
+function positionFromProps(props: WithoutType<Node>): Position {
+    const { start, end } = props;
     return { start, end };
 }
 
-export const callExpression = (args: ASTNodeParams<CallExpression>): CallExpression => ({
+export const callExpression = (props: WithoutType<CallExpression>): CallExpression => ({
     type: "callExpression",
-    function: args.function,
-    arguments: args.arguments,
-    ...positionFromArgs(args)
+    function: props.function,
+    arguments: props.arguments,
+    ...positionFromProps(props)
 });
 
 ////////////////
@@ -205,6 +259,7 @@ export type Statement =
     | ReturnStatement
     | ExpressionStatement
     | BlockStatement
+    | ForStatement
 ;
 
 export interface VariableDeclaration extends Position {
@@ -214,15 +269,18 @@ export interface VariableDeclaration extends Position {
     value?: Expression | null;
 }
 
-export function variableDeclaration(
+export function variableDeclaration(props: {
     constant: boolean,
     identifier: Identifier,
-    position: Position,
     value?: Expression | null,
-): VariableDeclaration {
+    position?: Position
+}): VariableDeclaration {
+
+    const { constant, position, identifier, value } = props;
+
     return {
         type: "variableDeclaration",
-        ...position,
+        ...(position || DEFAULT_POSITION),
         constant,
         identifier,
         value,
@@ -236,13 +294,13 @@ export interface FunctionDeclaration extends Position {
     body: BlockStatement
 }
 
-export const functionDeclaration = (args: ASTNodeParams<FunctionDeclaration>): FunctionDeclaration => ({
+export const functionDeclaration = (props: WithoutType<FunctionDeclaration>): FunctionDeclaration => ({
     type: "functionDeclaration",
-    identifier: args.identifier,
-    parameters: args.parameters,
-    body: args.body,
-    start: args.start,
-    end: args.end,
+    identifier: props.identifier,
+    parameters: props.parameters,
+    body: props.body,
+    start: props.start,
+    end: props.end,
 });
 
 export interface ReturnStatement extends Position {
@@ -250,7 +308,7 @@ export interface ReturnStatement extends Position {
     returnValue: Expression;
 }
 
-export function returnStatement(expression: Expression, position: Position): ReturnStatement {
+export function returnStatement(expression: Expression, position: Position = DEFAULT_POSITION): ReturnStatement {
     return {
         type: "returnStatement",
         ...position,
@@ -263,7 +321,7 @@ export interface ExpressionStatement extends Position {
     expression: Expression;
 }
 
-export function expressionStatement(expression: Expression, position: Position): ExpressionStatement {
+export function expressionStatement(expression: Expression, position: Position = DEFAULT_POSITION): ExpressionStatement {
     return {
         type: "expressionStatement",
         ...position,
@@ -285,6 +343,12 @@ export function blockStatement(statements: Statement[], position: Position): Blo
 }
 
 
+export interface ForStatement extends Position {
+    type: "forStatement",
+    init: VariableDeclaration,
+    limit: ExpressionStatement
+}
+
 
 ////////////////
 // Program
@@ -295,10 +359,10 @@ export interface Program extends Position {
     body: Statement[];
 }
 
-export function program(statements: Statement[] = [], position: Position): Program {
+export function program(statements: Statement[] = [], position: Position = DEFAULT_POSITION): Program {
     return {
         type: "program",
-        ...position,
         body: statements,
+        ...position,
     };
 }

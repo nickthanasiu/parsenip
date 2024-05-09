@@ -2,7 +2,10 @@ import { useState } from "react";
 import Tab from "./Tab";
 import TokensPanel from "./TokensPanel";
 import ParserPanel from "./ParserPanel";
-import TempPanel from "./TempPanel";
+import { evaluate } from "../../interpreter/evaluator";
+import { parse } from "../../interpreter/parser";
+import { toString } from "../../interpreter/object";
+import { Environment } from "../../interpreter/environment";
 
 
 type TabName = 'tokens' | 'parser' | 'evaluate';
@@ -18,11 +21,11 @@ interface Props {
 
 export default function ResultsPanels(props: Props) {
     const [activeTab, setActiveTab] = useState<TabName>('parser');
+    const [result, setResult] = useState('');
 
     const tabs: Tab[] = [
         { name: 'tokens', displayName: 'Tokens' },
         { name: 'parser', displayName: 'Parser' },
-        { name: 'evaluate', displayName: 'Run Code'}
     ];
 
     const tabsStyles = {
@@ -40,14 +43,19 @@ export default function ResultsPanels(props: Props) {
                 DisplayPanel = TokensPanel;
                 break;
             case 'parser':
-                DisplayPanel = ParserPanel;
-                break;
             default:
-                DisplayPanel = TempPanel;
+                DisplayPanel = ParserPanel;
         }
 
         return <DisplayPanel {...props} />
     };
+
+    function evaluateCode() {
+        const [program, _] = parse(props.input);
+        const env = new Environment();
+        const result = toString(evaluate(program, env));
+        setResult(result);
+    }
 
     return (
         <div>
@@ -59,9 +67,22 @@ export default function ResultsPanels(props: Props) {
                         handleClick={() => setActiveTab(t.name)}
                     />
                 )}
+
+                <button onClick={evaluateCode}>Run Code</button>
+                {result && <OutputPanel output={result} />}
             </div>
 
             <DisplayPanel {...props} />
+        </div>
+    );
+}
+
+function OutputPanel({ output } : { output: string }) {
+    return (
+        <div>
+            <div style={{ backgroundColor: 'gray', borderRadius: '5px' }}>
+                { output }
+            </div>
         </div>
     );
 }

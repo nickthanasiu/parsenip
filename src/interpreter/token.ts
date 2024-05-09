@@ -19,8 +19,13 @@ export enum TokenType {
     NOT_EQ = "NOT_EQ",
     LT = "LT",
     GT = "GT",
+    LTE = "LTE",
+    GTE = "GTE",
+    AND = "AND",
+    OR = "OR",
   
     // Delimiters
+    DOT = "DOT",
     COMMA = "COMMA",
     COLON = "COLON",
     SEMICOLON = "SEMICOLON",
@@ -42,26 +47,40 @@ export enum TokenType {
     FALSE = "FALSE",
   }
 
-  export function tokenTypeToString(tt: TokenType) {
-    const tttsMap = new Map([
-      [TokenType.EOF, "EOF"],
-      [TokenType.ASSIGN, "ASSIGN"],
-      [TokenType.SEMICOLON, "SEMICOLON"],
-    ]);
 
-    return tttsMap.get(tt);
-  }
-  
 export interface Position {
   start: number;
   end: number;
 }
 
-  export interface Token {
-    type: TokenType;
-    literal: string;
-    position: Position;
+export const DEFAULT_POSITION: Position = { start: -1, end: -1 };
+
+export class PositionHelper implements Position {
+
+  start: number; end: number;
+  testMode: boolean;
+
+  constructor({ testMode }: { testMode: boolean }) {
+    this.start = DEFAULT_POSITION.start;
+    this.end = DEFAULT_POSITION.end;
+    this.testMode = testMode;
   }
+
+  public setPosition({ start, end }: Position): Position {
+    if (!this.testMode) {
+      this.start = start;
+      this.end = end;
+    }
+
+    return { start: this.start, end: this.end };
+  }
+}
+
+export interface Token {
+  type: TokenType;
+  literal: string;
+  position: Position;
+}
   
   export function newToken(type: TokenType, text: string, position: Position): Token {
     return { type, literal: text, position: position || { start: -1, end: -1 } };
@@ -78,7 +97,6 @@ export interface Position {
     ["false", TokenType.FALSE],
   ]);
   
-  export function lookupIdentifer(text: string, position: Position) {
-    const type = keywords.get(text) || TokenType.IDENT;
-    return newToken(type, text, position);
+  export function lookupIdentiferType(text: string) {
+    return keywords.get(text) || TokenType.IDENT;
   }
