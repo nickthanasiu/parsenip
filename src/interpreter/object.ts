@@ -140,7 +140,7 @@ export function functionDec(
     }
 }
 
-export function toString(obj: Object) {
+export function toString(obj: Object): string {
     switch (obj.kind) {
         case "boolean":
             return `${obj.value} : boolean`;
