@@ -59,7 +59,7 @@ test('variable declaration of object literal', () => {
 
 
 
-test(`retrieve value of key from object literal`, () => {
+test(`retrieve value of key from object literal using brackets syntax`, () => {
   const evaluated = testEval(`
     const person = { name: "Nick" };
     person["name"];
@@ -67,6 +67,16 @@ test(`retrieve value of key from object literal`, () => {
 
   const expected = obj.string("Nick");  
   expect(evaluated).toEqual(expected);
+});
+
+test(`retrieve value of key from object literal using dot operator`, () => {
+  const actual = testEval(`
+    const person = { name: "Nick" };
+    person.name;
+  `);
+
+  const expected = obj.string("Nick");
+  expect(actual).toEqual(expected);
 });
 
 test(`retrieve value from array literal using index`, () => {

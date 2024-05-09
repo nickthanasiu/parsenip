@@ -141,12 +141,25 @@ function evalMemberExpression(memberExpr: ast.MemberExpression, env: Environment
 }
 
 function evalObjectMemberExpression(objLiteral: obj.ObjectLiteral, keyExpression: ast.Expression, env: Environment) {
+    // If keyExpression is an identifer, we don't need to evaluate it.
+    // If it's an expression, we do need to evaluate
+    // For now let's assume that if keyExpression is not an identifier, it must be an expression
+    // @TODO: There may be some weird edge cases where this let's us use some unwanted values here, and we get useless/vague errors
+    //        Let's worry about that later
 
-    const key = evaluate(keyExpression, env);
+    let key: obj.String;
 
-    if (key.kind !== "string") {
-        // @TODO: This is NOT how JavaScript handles this, but it will do for now
-        throw `Object key must be a string`;
+    if (keyExpression.type !== "identifier") {
+        const evaluatedExpression = evaluate(keyExpression, env);
+
+        if (evaluatedExpression.kind !== "string") {
+            // @TODO: This is NOT how JavaScript handles this, but it will do for now
+            throw `Object key must be a string`;
+        }
+
+        key = evaluatedExpression;
+    } else {
+        key = obj.string(keyExpression.value);
     }
 
     const matchingProp = objLiteral.properties.find(p => p.key.value == key.value);
