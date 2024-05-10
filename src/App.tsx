@@ -18,7 +18,7 @@ export default function App() {
   return (
     <div className="app">
       <header style={{ paddingLeft: '20px', height: '35px', backgroundColor: 'lightgrey', display: 'flex', alignItems: 'center' }}>
-        <h3 style={{ margin: 0 }}>Parsenip</h3>
+        <h3 style={{ margin: 0 }}>{document.title}</h3>
         <button onClick={resetEditorInput} style={{ marginLeft: '50px' }}>New</button>
       </header>
       <SplitScreen>
