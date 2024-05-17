@@ -3,18 +3,24 @@ import * as ast from '../../interpreter/ast';
 import { colors } from './colors';
 import Expander from '../../components/Expander';
 
-type Props = {
+export type Props = {
     node: ast.Node;
     cursorPosition: number;
+    highlightCode(start: number, end: number): void;
 };
 
-export default function ASTNode({ node: currNode, cursorPosition }: Props) {
-
+export default function ASTNode(props: Props) {
+    const {
+        node: currNode,
+        cursorPosition,
+        highlightCode
+    } = props;
+    
     const [expanderState, setExpanderState] = useState<
         'untouched' | 'collapsedByUser' | 'expanded'
     >('untouched');
 
-    const expanded = 
+    const expanded =
         (cursorOverNode(currNode) && expanderState !== 'collapsedByUser')
         || expanderState === 'expanded';
     
@@ -54,6 +60,10 @@ export default function ASTNode({ node: currNode, cursorPosition }: Props) {
         setExpanderState(!expanded ? 'expanded' : 'collapsedByUser');
     }
 
+    function handleHover() {
+        highlightCode(currNode.start, currNode.end);
+    }
+
     const styles = {
         paddingLeft: '10px',
         marginBottom: '0px',
@@ -61,7 +71,7 @@ export default function ASTNode({ node: currNode, cursorPosition }: Props) {
     };
 
     return (
-        <div style={styles}>
+        <div style={styles} onMouseEnter={handleHover}>
             <Expander
                 title={currNode.type} 
                 expanded={expanded}
@@ -77,10 +87,10 @@ export default function ASTNode({ node: currNode, cursorPosition }: Props) {
                                     ? Array.isArray(value)
                                         ? <>
                                             [
-                                            {value.map(v => <ASTNode node={v} cursorPosition={cursorPosition} />)}
+                                            {value.map(v => <ASTNode {...props} node={v} />)}
                                             ]
                                           </>
-                                        : <ASTNode node={value} cursorPosition={cursorPosition} />
+                                        : <ASTNode {...props} node={value} />
                                     : value
                             }
                             </span>

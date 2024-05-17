@@ -1,5 +1,5 @@
 import { PropsWithChildren } from "react";
-import { colors } from "../features/resultsPanels/colors";
+import { colors } from "../features/resultsPanel/colors";
 
 type Props = PropsWithChildren<{ 
     title: string;

@@ -1,4 +1,5 @@
 import * as ast from "./ast";
+import { Lexer } from "./lexer";
 import { parse } from "./parser";
 
 
@@ -201,7 +202,7 @@ test('objectLiteral dot operator assignment', () => {
 
 
 function testParse(input: string): ast.Program {
-    const [program, _] = parse(input, { throwOnError: true, testMode: true });
+    const [program, _] = parse(input, { testMode: true });
 
     if (!program) {
       throw new Error(`Could not parse: ${input}`);

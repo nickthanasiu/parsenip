@@ -1,17 +1,21 @@
-import { useMemo } from "react";
 import { parse } from "../../interpreter/parser";
-import ASTNode from "./ASTNode";
+import styles from "./ResultsPanel.module.css";
+import ASTNode, { Props as ASTNodeProps } from "./ASTNode";
 
-export default function ParserPanel({ input, cursorPosition }: { input: string; cursorPosition: number; }) {
-    const [program, errors] = useMemo(() => parse(input), [input]);
-
+type Props = {
+    input: string;
+    astNodeProps: Omit<ASTNodeProps, "node">
+}
+    
+export default function ParserPanel({ input, astNodeProps }: Props) {
+   const [program, errors] = parse(input);
     return (
         <div>
             {errors 
                 ? <ParserErrors errors={errors} />
                 : <ASTNode 
+                    {...astNodeProps}
                     node={program}
-                    cursorPosition={cursorPosition}
                 />
             }
         </div>
@@ -20,9 +24,8 @@ export default function ParserPanel({ input, cursorPosition }: { input: string; 
 
 function ParserErrors({ errors }: { errors: string[] }) {
     return (
-        <div style={{ backgroundColor: '#f09999' }}>
+        <div className={styles.parserErrors}>
             <h3>Found the following errors while parsing: </h3>
-
             {errors.map((err, i) => <p key={err + i}>{err}</p>)}
         </div>
     );

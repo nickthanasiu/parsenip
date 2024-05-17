@@ -6,3 +6,19 @@
 .app {
   height: 100vh;
 }
+
+.app header {
+  padding-left: 20px;
+  height: 35px;
+  background-color: lightgrey;
+  display: flex;
+  align-items: center;
+}
+
+.app header button {
+  margin-left: 50px;
+}
+
+.highlighted-code {
+  background-color: #f5f5d6;
+}

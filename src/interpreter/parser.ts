@@ -744,28 +744,26 @@ export class Parser implements Parser {
 }
 
 interface ParseOptions {
-    throwOnError?: boolean;
     testMode?: boolean;
 }
 
-export function parse(input: string, { throwOnError, testMode }: ParseOptions = {}) {
+export function parse(input: string, { testMode }: ParseOptions = {}) {
     const lexer = new Lexer(input);
     const parser = new Parser({ lexer, testMode });
-
     const program = parser.parseProgram();
-    const errors = checkParserErrors(parser, !!throwOnError);
+    const errors = checkParserErrors(parser, testMode);
 
     return [program, errors] as [ast.Program, string[]];
 }
 
-export function checkParserErrors({ errors }: Parser, throwOnError = false) {
+export function checkParserErrors({ errors }: Parser, testMode = false) {
     if (errors.length) {
         let message = `Parser has ${errors.length} errors\n\n`;
         for (const error of errors) {
             message += `ERROR: ${error}\n`;
         }
 
-        if (throwOnError) {
+        if (testMode) {
             throw new Error(message);
         } else {
             return errors;
