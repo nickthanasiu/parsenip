@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { editor as monaco, Range, IKeyboardEvent, IPosition } from "monaco-editor";
+import { EditorProps } from "@monaco-editor/react";
   
 export function useEditor() {
   const [editor, setEditor] = useState<monaco.IStandaloneCodeEditor>();
@@ -60,17 +61,17 @@ export function useEditor() {
     updateCursorPosition();
   }
 
-
-  const config = {
+  const config: EditorProps = {
     height: '100vh',
     width: '100%',
     theme: 'vs-light',
     language: 'javascript',
     value: input,
     options: {
-        wordBasedSuggestions: true,
-        wordBasedSuggestionsOnlySameLanguage: true,
-        'semanticHighlighting.enabled': true 
+      minimap: { enabled: false },
+      wordBasedSuggestions: true,
+      wordBasedSuggestionsOnlySameLanguage: true,
+      'semanticHighlighting.enabled': true,
     },
     onMount: handleEditorMount,
     onChange: handleChange,
