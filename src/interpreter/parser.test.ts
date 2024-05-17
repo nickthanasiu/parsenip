@@ -1,5 +1,4 @@
 import * as ast from "./ast";
-import { Lexer } from "./lexer";
 import { parse } from "./parser";
 
 
