@@ -1,64 +1,64 @@
-import { useState, useRef} from 'react';
-import { editor } from "monaco-editor";
+import Editor from "@monaco-editor/react";
+import { Position } from "./interpreter/token";
+import { lex } from "./interpreter/lexer";
 import SplitScreen from './components/SplitScreen';
-import TextEditor from './features/textEditor';
-import { useCursorPosition } from "./hooks/useCursorPosition";
-import ResultsPanels from './features/resultsPanels';
+import ResultsPanel from './features/resultsPanel/ResultsPanel';
+import { useEditor } from './features/textEditor/useEditor';
+import TokenCard from "./features/resultsPanel/TokenCard";
+import ParserPanel from "./features/resultsPanel/ParserPanel";
+import styles from "./features/resultsPanel/ResultsPanel.module.css";
 import './App.css';
-import { Editor } from '@monaco-editor/react';
-
-type Editor = editor.IStandaloneCodeEditor;
 
 export default function App() {
-  const { editorInput, setEditorInput, resetEditorInput } = useEditorInput();
+  const {
+    cursorPosition,
+    input,
+    resetInput,
+    highlightCode,
+    config: editorConfig,
+  } = useEditor();
 
-  const editorRef = useRef<Editor>();
-  const [cursorPosition, updateCursorPosition] = useCursorPosition(editorRef);
-  
+  const tokens = lex(input); // @TODO is this being called unnecessarily??
+ 
+  const cursorIsOverToken = ({ start, end }: Position, cursorPosition: number) => {
+    return cursorPosition >= start && cursorPosition <= end;
+  };
+
+  function resetCodeHighlight() {
+    highlightCode(0, 0);
+  }
+
+
   return (
     <div className="app">
-      <header style={{ paddingLeft: '20px', height: '35px', backgroundColor: 'lightgrey', display: 'flex', alignItems: 'center' }}>
-        <h3 style={{ margin: 0 }}>{document.title}</h3>
-        <button onClick={resetEditorInput} style={{ marginLeft: '50px' }}>New</button>
+      <header>
+        <h3>{document.title}</h3>
+        <button onClick={resetInput}>New</button>
       </header>
       <SplitScreen>
-        <TextEditor 
-          initialValue={editorInput}
-          setEditorInput={setEditorInput}
-          editorRef={editorRef}
-          updateCursorPosition={updateCursorPosition}
-        />
-        <ResultsPanels input={editorInput} cursorPosition={cursorPosition} />
+        <Editor {...editorConfig} />
+        <ResultsPanel>
+          <div className={styles.tokenPanel} onMouseLeave={resetCodeHighlight}>
+            {tokens.map(t => (
+              <div onMouseEnter={() => highlightCode(t.position.start, t.position.end)}>
+                <TokenCard
+                  token={t}
+                  highlighted={cursorIsOverToken(t.position, cursorPosition)}
+                />
+              </div>
+            ))}
+          </div>
+          <ParserPanel
+            input={input}
+            astNodeProps={{
+              cursorPosition,
+              highlightCode,
+              // Reset code highlighting when mouse leaves ParserPanel entirely
+              onMouseLeave: resetCodeHighlight
+            }}
+          />
+        </ResultsPanel>
       </SplitScreen>
     </div>
   );
 }
-
-
-function useEditorInput() {
-  const starterCode = 
-    `/*\n * Write code here and see how\n * the lexer and parser interpret it \n */\n\nconst x = 1;\nconst y = y;\n\nfunction add(a, b){\n  return a + b;\n}\n\nconst sum = add(x, y);`;
-  
-  const [editorInput, setEditorInput] = useState(loadState);
-
-  function loadState() {
-    return localStorage.getItem('code') ?? starterCode;
-  }
-
-  function saveState(input: string) {
-    localStorage.setItem('code', input);
-    setEditorInput(input);
-  }
-
-  function resetEditorInput() {
-    localStorage.removeItem('code');
-    setEditorInput(starterCode);
-  }
-
-  return {
-    editorInput,
-    setEditorInput: saveState,
-    resetEditorInput
-  }
-}
-
