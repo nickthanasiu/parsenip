@@ -9,6 +9,7 @@ type Props = {
     
 export default function ParserPanel({ input, astNodeProps }: Props) {
    const [program, errors] = parse(input);
+
     return (
         <div>
             {errors 
@@ -30,7 +31,3 @@ function ParserErrors({ errors }: { errors: string[] }) {
         </div>
     );
 }
-
-
-
-

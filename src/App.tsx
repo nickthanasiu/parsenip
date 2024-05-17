@@ -18,11 +18,16 @@ export default function App() {
     config: editorConfig,
   } = useEditor();
 
-  const tokens = lex(input);
+  const tokens = lex(input); // @TODO is this being called unnecessarily??
  
   const cursorIsOverToken = ({ start, end }: Position, cursorPosition: number) => {
     return cursorPosition >= start && cursorPosition <= end;
   };
+
+  function resetCodeHighlight() {
+    highlightCode(0, 0);
+  }
+
 
   return (
     <div className="app">
@@ -33,13 +38,13 @@ export default function App() {
       <SplitScreen>
         <Editor {...editorConfig} />
         <ResultsPanel>
-          <div className={styles.tokenPanel}>
+          <div className={styles.tokenPanel} onMouseLeave={resetCodeHighlight}>
             {tokens.map(t => (
               <div onMouseEnter={() => highlightCode(t.position.start, t.position.end)}>
-              <TokenCard
-                token={t}
-                highlighted={cursorIsOverToken(t.position, cursorPosition)}
-              />
+                <TokenCard
+                  token={t}
+                  highlighted={cursorIsOverToken(t.position, cursorPosition)}
+                />
               </div>
             ))}
           </div>
@@ -47,7 +52,9 @@ export default function App() {
             input={input}
             astNodeProps={{
               cursorPosition,
-              highlightCode
+              highlightCode,
+              // Reset code highlighting when mouse leaves ParserPanel entirely
+              onMouseLeave: resetCodeHighlight
             }}
           />
         </ResultsPanel>

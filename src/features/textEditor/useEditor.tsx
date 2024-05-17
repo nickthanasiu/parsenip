@@ -72,6 +72,11 @@ export function useEditor() {
       wordBasedSuggestions: true,
       wordBasedSuggestionsOnlySameLanguage: true,
       'semanticHighlighting.enabled': true,
+      overviewRulerLanes: 0,
+      scrollbar: {
+        //@TODO: For some reason, this setting breaks code highlighting..investigate why
+        //vertical: 'hidden' 
+      }
     },
     onMount: handleEditorMount,
     onChange: handleChange,

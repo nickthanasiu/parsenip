@@ -6,6 +6,7 @@ import Expander from '../../components/Expander';
 export type Props = {
     node: ast.Node;
     cursorPosition: number;
+    onMouseLeave: () => void;
     highlightCode(start: number, end: number): void;
 };
 
@@ -13,7 +14,8 @@ export default function ASTNode(props: Props) {
     const {
         node: currNode,
         cursorPosition,
-        highlightCode
+        highlightCode,
+        onMouseLeave
     } = props;
     
     const [expanderState, setExpanderState] = useState<
@@ -38,6 +40,8 @@ export default function ASTNode(props: Props) {
         return cursorPosition >= node.start && cursorPosition <= node.end;
     }
 
+    // @TODO: See if this can be done more efficiently, by passing down a function through
+    // child nodes
     function cursorOverChildNode() {
         for (const val of Object.values(currNode)) {
             if (isASTNode(val)) {
@@ -60,9 +64,10 @@ export default function ASTNode(props: Props) {
         setExpanderState(!expanded ? 'expanded' : 'collapsedByUser');
     }
 
-    function handleHover() {
+    function onMouseEnter() {
         highlightCode(currNode.start, currNode.end);
     }
+
 
     const styles = {
         paddingLeft: '10px',
@@ -71,7 +76,7 @@ export default function ASTNode(props: Props) {
     };
 
     return (
-        <div style={styles} onMouseEnter={handleHover}>
+        <div style={styles} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
             <Expander
                 title={currNode.type} 
                 expanded={expanded}
@@ -87,10 +92,20 @@ export default function ASTNode(props: Props) {
                                     ? Array.isArray(value)
                                         ? <>
                                             [
-                                            {value.map(v => <ASTNode {...props} node={v} />)}
+                                            {value.map(v => (
+                                                <ASTNode 
+                                                    {...props}
+                                                    node={v}
+                                                    onMouseLeave={onMouseEnter}
+                                                />
+                                            ))}
                                             ]
                                           </>
-                                        : <ASTNode {...props} node={value} />
+                                        : <ASTNode 
+                                            {...props}
+                                            node={value}
+                                            onMouseLeave={onMouseEnter}
+                                        />
                                     : value
                             }
                             </span>
