@@ -21,9 +21,10 @@ export default function ASTNode(props: Props) {
     const [expanderState, setExpanderState] = useState<
         'untouched' | 'collapsedByUser' | 'expanded'
     >('untouched');
-
+    
     const expanded =
-        (cursorOverNode(currNode) && expanderState !== 'collapsedByUser')
+        currNode.type === 'program'
+        || (cursorOverNode(currNode) && expanderState !== 'collapsedByUser')
         || expanderState === 'expanded';
     
     const highlighted = cursorOverNode(currNode) && !cursorOverChildNode();
