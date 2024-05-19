@@ -33,7 +33,15 @@ export default function App() {
     <div className="app">
       <header>
         <h3>{document.title}</h3>
-        <button onClick={resetInput}>New</button>
+        <button onClick={resetInput}>Reset</button>
+        <button style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <img src="src/assets/play-icon.png" style={{ marginRight: '5px'}}/>
+          Run
+        </button>
       </header>
       <SplitScreen>
         <Editor {...editorConfig} />
