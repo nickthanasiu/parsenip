@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { editor as monaco, Range, IKeyboardEvent, IPosition } from "monaco-editor";
+import { editor as monaco, Range, IPosition } from "monaco-editor";
 import { EditorProps } from "@monaco-editor/react";
   
 export function useEditor() {
   const [editor, setEditor] = useState<monaco.IStandaloneCodeEditor>();
-  const [cursorPosition, updateCursorPosition] = useCursorPosition(editor);
+  const [cursorPosition, setCursorPosition] = useState(0);
   const decorationsCollectionRef = useRef<monaco.IEditorDecorationsCollection>();
   const  { input, setInput, resetInput } = useEditorInput();
   
@@ -20,19 +20,12 @@ export function useEditor() {
   }, [editor]);
 
   
-  // Listen for and handle key up events
-  editor?.onKeyUp(({ code }: IKeyboardEvent) => {
-    switch (code) {
-      case 'ArrowUp':
-      case 'ArrowDown':
-      case 'ArrowLeft':
-      case 'ArrowRight':
-          updateCursorPosition();
-          return;
-      default:
-          return;
-    }
+  editor?.onDidChangeCursorPosition(() => {
+    const textModel = editor.getModel() as monaco.ITextModel;
+    const cursorPosition = textModel.getOffsetAt(editor.getPosition() as IPosition);
+    setCursorPosition(cursorPosition);
   });
+
   
   function updateDecorations(start: number, end: number) {
     const textModel = editor?.getModel();
@@ -57,8 +50,8 @@ export function useEditor() {
   };
   
   function handleChange() {
+    console.log('handleChange');
     setInput(editor?.getValue() || '');
-    updateCursorPosition();
   }
 
   const config: EditorProps = {
@@ -95,24 +88,6 @@ export function useEditor() {
     config,
   };
 
-}
-
-  
-const useCursorPosition = function(editor: monaco.IStandaloneCodeEditor | undefined) {
-
-  const [cursorPosition, setPosition] = useState(0);
-
-  function updateCursorPosition() {
-
-      if (editor) {
-          const cursorPosition = editor?.getModel()?.getOffsetAt(editor.getPosition() as IPosition);
-          if (cursorPosition) {
-              setPosition(cursorPosition);
-          }
-      }
-  }
-
-  return [cursorPosition, updateCursorPosition] as [number, typeof updateCursorPosition];
 }
 
 
