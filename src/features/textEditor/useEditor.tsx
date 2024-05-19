@@ -50,7 +50,6 @@ export function useEditor() {
   };
   
   function handleChange() {
-    console.log('handleChange');
     setInput(editor?.getValue() || '');
   }
 
