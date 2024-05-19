@@ -3,9 +3,10 @@ import styles from './SplitScreen.module.css';
 
 interface Props {
     children: [ReactNode, ReactNode];
+    vertical?: boolean;
 }
 
-export default function SplitScreen({ children: [leftPanel, rightPanel] }: Props) {
+export default function SplitScreen({ children: [leftPanel, rightPanel], vertical }: Props) {
 
     const [leftWidthPercentage, setLeftWidthPercentage] = useState(50);
     const [dragging, setDragging] = useState(false);
@@ -14,14 +15,23 @@ export default function SplitScreen({ children: [leftPanel, rightPanel] }: Props
 
     function mouseMoveHandler(e: React.MouseEvent<HTMLElement>) {
         if (!dragging || !containerRef.current) return;
-        setLeftWidthPercentage((e.clientX / containerRef.current.offsetWidth) * 100);
+        setLeftWidthPercentage(
+            ((vertical ? e.clientY : e.clientX) / containerRef.current.offsetWidth) * 100
+        );
+    }
+
+    const containerStyles = [styles.container];
+
+    if (vertical) {
+        containerStyles.push(styles.vertical);
     }
 
     return (
         <div 
-            className={styles.container}
-            style={{ 
-                gridTemplateColumns: `${leftWidthPercentage}% 5px ${100-leftWidthPercentage}%`, 
+            className={containerStyles.join(' ')}
+            style={{
+                gridTemplateRows: vertical ? `${leftWidthPercentage}% 5px ${100-leftWidthPercentage}%` : 'none',
+                gridTemplateColumns: vertical ? 'none':  `${leftWidthPercentage}% 5px ${100-leftWidthPercentage}%`,
                 userSelect: dragging ? 'none' : 'auto',
             }}
             ref={containerRef}

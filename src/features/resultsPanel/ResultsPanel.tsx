@@ -1,5 +1,6 @@
 import { useState, ReactNode } from "react";
 import styles from "./ResultsPanel.module.css";
+import SplitScreen from "../../components/SplitScreen";
 
 
 type Tab = {
@@ -34,37 +35,45 @@ export default function ResultsPanel({
 
     return (
         <div>
-            <div className={styles.tabs}>
-                {tabs.map(t =>
-                    <div
-                        className={conditionalStyles({
-                            baseStyles: [styles.tab],
-                            conditionalStyles: [{
-                                condition: t.name === activeTab,
-                                styles: styles.activeTab
-                            }]
-                        })}
-                        onClick={() => setActiveTab(t.name)}
-                    >
-                        {t.name.charAt(0).toUpperCase() + t.name.slice(1)}
+            <SplitScreen vertical>
+                
+                <div style={{ overflow: 'scroll' }}>
+                    <div className={styles.tabs}>
+                        {tabs.map(t =>
+                            <div
+                                className={_style({
+                                    base: [styles.tab],
+                                    conditional: [{
+                                        condition: t.name === activeTab,
+                                        styles: styles.activeTab
+                                    }]
+                                })}
+                                onClick={() => setActiveTab(t.name)}
+                            >
+                                {t.name.charAt(0).toUpperCase() + t.name.slice(1)}
+                            </div>
+                        )}
                     </div>
-                )}
-            </div>
-
-            <ActivePanel />
+                    <ActivePanel />
+                </div>
+                <div style={{
+                    border: '1px solid red',
+                    
+                }}>Results</div>
+            </SplitScreen>
         </div>
     );
 }
 
-type ConditionalStylesOpts = { 
-    baseStyles: string[];
-    conditionalStyles: { condition: boolean, styles: string | string[] }[];
+type StyleOpts = { 
+    base: string[];
+    conditional: { condition: boolean, styles: string | string[] }[];
 };
 
-function conditionalStyles({ baseStyles, conditionalStyles }: ConditionalStylesOpts) {
-    const styles = baseStyles;
+function _style({ base, conditional }: StyleOpts) {
+    const styles = base;
 
-    for (const cs of conditionalStyles) {
+    for (const cs of conditional) {
         if (cs.condition) {
             addStyles(styles, cs.styles);
         }
