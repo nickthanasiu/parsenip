@@ -1,28 +1,56 @@
+
+
 .container {
     height: 100%;
     width: 100%;
     display: grid;
+
+    --divider-gap: 10px;
+    --drag-indicator-width: 3px;
 }
 
-.vertical {
-    
+.dragging {
+    user-select: none;
+}
 
-    .divider {
-        width: 100%;
-        height: 3px;
+
+.divider {
+    width: var(--divider-gap);
+    background-color: var(--light-gray);
+    position: relative;
+    padding: 0;
+
+    .dragIndicator {
+        width: var(--drag-indicator-width);
+        height: 100%;
+        position: absolute;
+        left: 0;
+        right: 0;
+        margin: auto;
 
         &:hover {
-            cursor: row-resize;
+            cursor: col-resize;
+            background-color: var(--blue);
         }
     }
 }
 
-.divider {
-    width: 3px;
+.vertical {
+    .divider {
+        width: 100%;
+        height: var(--divider-gap);
 
-    &:hover {
-        cursor: col-resize;
-        background-color: var(--blue);
+        .dragIndicator {
+            width: 100%;
+            height: var(--drag-indicator-width);
+            top: 0;
+            bottom: 0;
+    
+            &:hover {
+                background-color: var(--blue);
+                cursor: row-resize;
+            }
+        }
     }
 }
 

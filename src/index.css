@@ -10,6 +10,8 @@
 
   --blue: #268bd2;
   --highlight-yellow: #ffffeo;
+  --lighter-gray: #efefef;
+  --light-gray: lightgray; 
 }
 
 a {

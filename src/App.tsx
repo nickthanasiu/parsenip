@@ -24,10 +24,9 @@ export default function App() {
     return cursorPosition >= start && cursorPosition <= end;
   };
 
-  function resetCodeHighlight() {
+  const resetCodeHighlight = () => {
     highlightCode(0, 0);
-  }
-
+  };
 
   return (
     <div className="app">

@@ -1,12 +1,11 @@
 import { useState, ReactNode } from "react";
 import styles from "./ResultsPanel.module.css";
 import SplitScreen from "../../components/SplitScreen";
-
+import { _style } from "../../util/style";
 
 type Tab = {
     name: 'tokens' | 'parser';
 };
-
 
 interface Props {
     children: [ReactNode, ReactNode];
@@ -33,10 +32,11 @@ export default function ResultsPanel({
         }
     };
 
+    const showEvalResult = true;
+
     return (
-        <div>
+        <div style={{ backgroundColor: '#fff'}}>
             <SplitScreen vertical>
-                
                 <div style={{ overflow: 'scroll' }}>
                     <div className={styles.tabs}>
                         {tabs.map(t =>
@@ -56,36 +56,10 @@ export default function ResultsPanel({
                     </div>
                     <ActivePanel />
                 </div>
-                <div style={{
-                    border: '1px solid red',
-                    
-                }}>Results</div>
+                {showEvalResult && <div style={{
+                    border: '1px solid red',  
+                }}>Evaluate results: ...</div>}
             </SplitScreen>
         </div>
     );
-}
-
-type StyleOpts = { 
-    base: string[];
-    conditional: { condition: boolean, styles: string | string[] }[];
-};
-
-function _style({ base, conditional }: StyleOpts) {
-    const styles = base;
-
-    for (const cs of conditional) {
-        if (cs.condition) {
-            addStyles(styles, cs.styles);
-        }
-    }
-
-    return styles.join(' ');
-
-    function addStyles(stylesArr: string[], stylesToAdd: string | string[]) {
-        if (typeof stylesToAdd === "string") {
-            return stylesArr.push(stylesToAdd);
-        }
-
-        stylesArr.push(...stylesToAdd.map(s => s));
-    }
 }

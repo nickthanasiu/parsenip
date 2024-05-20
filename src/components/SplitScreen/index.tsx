@@ -1,4 +1,5 @@
 import React, { useState, useRef, ReactNode } from 'react';
+import { _style } from '../../util/style';
 import styles from './SplitScreen.module.css';
 
 interface Props {
@@ -15,34 +16,40 @@ export default function SplitScreen({ children: [leftPanel, rightPanel], vertica
 
     function mouseMoveHandler(e: React.MouseEvent<HTMLElement>) {
         if (!dragging || !containerRef.current) return;
-        setLeftWidthPercentage(
-            ((vertical ? e.clientY : e.clientX) / containerRef.current.offsetWidth) * 100
-        );
+
+        const dividend = vertical ? e.clientY : e.clientX;
+        const divisor = vertical
+            ? containerRef.current.offsetHeight
+            : containerRef.current.offsetWidth;
+
+        setLeftWidthPercentage((dividend / divisor) * 100);
     }
 
-    const containerStyles = [styles.container];
-
-    if (vertical) {
-        containerStyles.push(styles.vertical);
-    }
 
     return (
         <div 
-            className={containerStyles.join(' ')}
+            className={_style({
+                base: [styles.container],
+                conditional: [
+                    { condition: !!vertical, styles: styles.vertical},
+                    { condition: dragging, styles: styles.dragging },
+                ]
+            })}
             style={{
-                gridTemplateRows: vertical ? `${leftWidthPercentage}% 5px ${100-leftWidthPercentage}%` : 'none',
-                gridTemplateColumns: vertical ? 'none':  `${leftWidthPercentage}% 5px ${100-leftWidthPercentage}%`,
-                userSelect: dragging ? 'none' : 'auto',
+                gridTemplateRows: vertical ? `${leftWidthPercentage}% 10px ${100-leftWidthPercentage}%` : 'none',
+                gridTemplateColumns: vertical ? 'none':  `${leftWidthPercentage}% 10px ${100-leftWidthPercentage}%`,
             }}
             ref={containerRef}
             onMouseUp={() => setDragging(false)}
             onMouseMove={mouseMoveHandler}
         >
             {leftPanel}
-            <div 
-                className={styles.divider}
-                onMouseDown={() => setDragging(true)}
-            />
+            <div className={styles.divider}>
+                <div 
+                    className={styles.dragIndicator}
+                    onMouseDown={() => setDragging(true)}
+                />
+            </div>
             {rightPanel}
         </div>
     );
