@@ -8,7 +8,6 @@ interface Props {
 }
 
 export default function SplitScreen({ children: [leftPanel, rightPanel], vertical }: Props) {
-
     const [leftWidthPercentage, setLeftWidthPercentage] = useState(50);
     const [dragging, setDragging] = useState(false);
 
