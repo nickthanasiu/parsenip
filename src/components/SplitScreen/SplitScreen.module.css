@@ -1,5 +1,3 @@
-
-
 .container {
     height: 100%;
     width: 100%;
@@ -7,7 +5,9 @@
 
     --divider-gap: 10px;
     --drag-indicator-width: 3px;
+    --drag-indicator-length: 25px;
 }
+
 
 .dragging {
     user-select: none;
@@ -21,35 +21,40 @@
     padding: 0;
 
     .dragIndicator {
+        background-color: var(--gray);
         width: var(--drag-indicator-width);
-        height: 100%;
+        height: var(--drag-indicator-length);
+        border-radius: 5px;
+        
         position: absolute;
+        top: 0;
         left: 0;
         right: 0;
+        bottom: 0;
         margin: auto;
+    }
 
-        &:hover {
-            cursor: col-resize;
-            background-color: var(--blue);
-        }
+    &:hover .dragIndicator{
+        height: 100%;
+        cursor: col-resize;
+        background-color: var(--blue);
     }
 }
 
 .vertical {
     .divider {
-        width: 100%;
         height: var(--divider-gap);
+        width: 100%;
 
         .dragIndicator {
-            width: 100%;
             height: var(--drag-indicator-width);
-            top: 0;
-            bottom: 0;
-    
-            &:hover {
-                background-color: var(--blue);
-                cursor: row-resize;
-            }
+            width: var(--drag-indicator-length);
+        }
+
+        &:hover .dragIndicator {
+            width: 100%;
+            background-color: var(--blue);
+            cursor: row-resize;
         }
     }
 }

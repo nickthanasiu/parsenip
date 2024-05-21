@@ -92,7 +92,7 @@ export function useEditor() {
 
 function useEditorInput() {
   const starterCode = 
-    `/*\n * Write code here and see how\n * the lexer and parser interpret it \n */\n\nconst x = 1;\nconst y = y;\n\nfunction add(a, b){\n  return a + b;\n}\n\nconst sum = add(x, y);`;
+    `/*\n * Write code here and see how\n * the lexer and parser interpret it \n */\n\nconst x = 1;\nconst y = 2;\n\nfunction add(a, b){\n  return a + b;\n}\n\nconst sum = add(x, y);`;
   
   const [input, setInput] = useState(loadState);
 

@@ -4,11 +4,12 @@
 }
 
 .app {
+  background-color: var(--light-gray);
   height: 100vh;
+  padding: 10px;
 }
 
 .app header {
-  background-color: var(--light-gray);
   padding-left: 20px;
   height: 35px;
   display: flex;
@@ -21,4 +22,8 @@
 
 .highlighted-code {
   background-color: #f5f5d6;
+}
+
+.editor {
+  padding-top: 10px;
 }

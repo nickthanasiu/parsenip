@@ -25,7 +25,6 @@ export default function SplitScreen({ children: [leftPanel, rightPanel], vertica
         setLeftWidthPercentage((dividend / divisor) * 100);
     }
 
-
     return (
         <div 
             className={_style({
