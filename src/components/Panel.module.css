@@ -34,6 +34,18 @@
         border-left: 1px solid var(--light-gray);
         border-right: 1px solid var(--light-gray);
     }
+
+    &:first-child .tabText {
+        border-left: 0;
+    }
+
+    &:last-child .tabText {
+        border-right: 0;
+    }
+
+    & + & {
+        margin-left: -1px;
+    }
 }
 
 .activeTab {
