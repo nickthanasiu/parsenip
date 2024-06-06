@@ -2,6 +2,7 @@ import React, { useState, useRef, ReactElement } from 'react';
 import { useDoubleToggle } from '../../hooks/useToggleBetween';
 import { PanelProps } from './Panel';
 import classNames from './panels.module.css';
+import { useClasses } from '../../hooks/useStyles';
 
 type PanelComponent = ReactElement<PanelProps>;
 type RenderPanelProps = Pick<PanelProps, 'expanded' | 'toggleExpanded'>;
@@ -39,12 +40,12 @@ export default function SplitPanel({ vertical, renderPanels }: Props) {
     }
 
     const PANEL_GAP = 10;
-    const headerHeight = '38';
+    const HEADER_HEIGHT = 38;
 
     const gridTemplates = {
-        p1Collapsed: `${headerHeight}px ${PANEL_GAP}px auto`,
-        p2Collapsed: `auto ${PANEL_GAP}px ${headerHeight}px`,
-        default: `
+        p1Expanded: `auto ${PANEL_GAP}px ${HEADER_HEIGHT}px`,
+        p2Expanded: `${HEADER_HEIGHT}px ${PANEL_GAP}px auto`,
+        bothExpanded: `
             calc(${p1WidthPercentage}% - ${PANEL_GAP / 2}px)
             ${PANEL_GAP}px
             calc(${100-p1WidthPercentage}% - ${PANEL_GAP / 2}px)
@@ -53,16 +54,18 @@ export default function SplitPanel({ vertical, renderPanels }: Props) {
 
     const gridStyle = {
         [vertical ? 'gridTemplateRows' : 'gridTemplateColumns']:
-            !p1Expanded ? gridTemplates['p1Collapsed'] :
-            !p2Expanded ? gridTemplates['p2Collapsed'] :
-            gridTemplates['default']
+            !p1Expanded ? gridTemplates['p2Expanded'] :
+            !p2Expanded ? gridTemplates['p1Expanded'] :
+            gridTemplates['bothExpanded']
     };
 
-    const containerClasses = [classNames.container];
-    
-    if (vertical) {
-        containerClasses.push(classNames.vertical);
-    }
+    const containerClasses = useClasses({
+        base: [classNames.container],
+        conditional: [{
+            condition: Boolean(vertical),
+            styles: [classNames.vertical]
+        }]
+    });
 
     const panelProps = [
         { expanded: p1Expanded, toggleExpanded: toggleP1 },
@@ -73,7 +76,7 @@ export default function SplitPanel({ vertical, renderPanels }: Props) {
 
     return (
         <div 
-            className={containerClasses.join(' ')}
+            className={containerClasses}
             style={gridStyle}
             ref={containerRef}
             onMouseUp={() => setDragging(false)}

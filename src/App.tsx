@@ -11,6 +11,7 @@ import { useEval } from "./hooks/useEval";
 import { useParser } from "./hooks/useParser";
 import resultsPanelStyles from "./features/resultsPanel/ResultsPanel.module.css";
 import SplitPanel from "./features/panels/SplitPanel";
+import Workspace from "./features/panels/Workspace";
 import ConditionalEnhancer from "./components/ConditionalEnhancer";
 import './App.css';
 
@@ -48,71 +49,77 @@ export default function App() {
           Run
         </Button>
       </header>
-      <SplitPanel renderPanels={([p1, p2]) => [
-        <Panel
-          expanded={p1.expanded}
-          toggleExpanded={p1.toggleExpanded}
-          tabs={[
-              <TabList.Item label="Code">
-                <Editor {...editorConfig} />
-              </TabList.Item>
-         ]}
-        />,
-        <ConditionalEnhancer<PanelProps>
-          condition={Boolean(evalResult)}
-          enhancer={(BaseComponent, baseComponentProps) =>
-            <SplitPanel
-              vertical
-              renderPanels={([p1, p2], splitPanelProps) => [
-                <BaseComponent
-                  {...baseComponentProps}
-                  expanded={p1.expanded}
-                  toggleExpanded={p1.toggleExpanded}
-                  vertical={splitPanelProps.vertical}
-                />,
-                <Panel
-                  expanded={p2.expanded}
-                  toggleExpanded={p2.toggleExpanded}
-                  vertical={splitPanelProps.vertical}
-                  tabs={[
-                    <TabList.Item label="Results">
-                      {evalResult}
-                    </TabList.Item>,
-                  ]}
-                />
-            ]}/>
-        }>
-          <Panel 
-            expanded={p2.expanded}
-            toggleExpanded={p2.toggleExpanded}
-            defaultActiveTabIdx={1}
+      <Workspace>
+        <SplitPanel renderPanels={([p1, p2]) => [
+          <Panel
+            id="editor"
+            expanded={p1.expanded}
+            toggleExpanded={p1.toggleExpanded}
             tabs={[
-              <TabList.Item label="Tokens">
-                <div className={resultsPanelStyles.tokenPanel} onMouseLeave={resetCodeHighlight}>
-                  {tokens.map(t => (
-                    <div onMouseEnter={() => highlightCode(t.position.start, t.position.end)}>
-                      <TokenCard
-                        token={t}
-                        highlighted={cursorIsOverToken(t.position, cursorPosition)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </TabList.Item>,
-              <TabList.Item label="Parser">
-                <ParserAST errors={parserErrors}>
-                  <ParserAST.Node
-                    node={program}
-                    cursorPosition={cursorPosition}
-                    highlightCode={highlightCode}
-                    onMouseLeave={resetCodeHighlight}
+                <TabList.Item label="Code">
+                  <Editor {...editorConfig} />
+                  <div></div>
+                </TabList.Item>
+          ]}
+          />,
+          <ConditionalEnhancer<PanelProps>
+            condition={Boolean(evalResult)}
+            enhancer={(BaseComponent, baseComponentProps) =>
+              <SplitPanel
+                vertical
+                renderPanels={([p1, p2], splitPanelProps) => [
+                  <BaseComponent
+                    {...baseComponentProps}
+                    expanded={p1.expanded}
+                    toggleExpanded={p1.toggleExpanded}
+                    vertical={splitPanelProps.vertical}
+                  />,
+                  <Panel
+                    id="evalResults"
+                    expanded={p2.expanded}
+                    toggleExpanded={p2.toggleExpanded}
+                    vertical={splitPanelProps.vertical}
+                    tabs={[
+                      <TabList.Item label="Results">
+                        {evalResult}
+                      </TabList.Item>,
+                    ]}
                   />
-                </ParserAST>
-              </TabList.Item>
-            ]}
-          />
-        </ConditionalEnhancer>
-      ]} />
+              ]}/>
+          }>
+            <Panel
+              id="tokensAndParser"
+              expanded={p2.expanded}
+              toggleExpanded={p2.toggleExpanded}
+              defaultActiveTabIdx={1}
+              tabs={[
+                <TabList.Item label="Tokens">
+                  <div className={resultsPanelStyles.tokenPanel} onMouseLeave={resetCodeHighlight}>
+                    {tokens.map(t => (
+                      <div onMouseEnter={() => highlightCode(t.position.start, t.position.end)}>
+                        <TokenCard
+                          token={t}
+                          highlighted={cursorIsOverToken(t.position, cursorPosition)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </TabList.Item>,
+                <TabList.Item label="Parser">
+                  <ParserAST errors={parserErrors}>
+                    <ParserAST.Node
+                      node={program}
+                      cursorPosition={cursorPosition}
+                      highlightCode={highlightCode}
+                      onMouseLeave={resetCodeHighlight}
+                    />
+                  </ParserAST>
+                </TabList.Item>
+              ]}
+            />
+          </ConditionalEnhancer>
+        ]} />
+      </Workspace>
     </div>
   );
 }

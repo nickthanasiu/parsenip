@@ -1,5 +1,6 @@
 import { ReactNode, ReactElement, MouseEventHandler } from "react";
 import classNames from "./panels.module.css";
+import { useClasses } from "../../hooks/useStyles";
 
 export interface TabItemProps {
     label: string;
@@ -23,17 +24,17 @@ interface TabProps {
 }
   
 TabList.Tab = function({ label, active, onClick }: TabProps) {
-  const tabStyles = [classNames.tab];
 
-  if (active) {
-    tabStyles.push(classNames.activeTab);
-  }
+  const tabClasses = useClasses({
+    base: [classNames.tab],
+    conditional: [{
+      condition: active,
+      styles: [classNames.activeTab]
+    }]
+  });
 
   return (
-    <div
-      className={tabStyles.join(' ')}
-      onClick={onClick}
-    >
+    <div className={tabClasses} onClick={onClick}>
       <div className={classNames.tabText}>
         {label}
       </div>

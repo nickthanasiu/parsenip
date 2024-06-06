@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import React, { useState, useRef, useEffect, PropsWithChildren } from 'react';
 import * as ast from '../../interpreter/ast';
 import { colors } from './colors';
 import Expander from '../../components/Expander';
+import styles from './ASTNode.module.css';
+import { useClasses } from '../../hooks/useStyles';
+import ConditionalEnhancer from '../../components/ConditionalEnhancer';
 
 export type Props = {
     node: ast.Node;
@@ -18,6 +21,7 @@ export default function ASTNode(props: Props) {
         onMouseLeave
     } = props;
     
+    const nodeRef = useRef<HTMLDivElement>(null);
     const [expanderState, setExpanderState] = useState<
         'untouched' | 'collapsedByUser' | 'expanded'
     >('untouched');
@@ -29,10 +33,12 @@ export default function ASTNode(props: Props) {
     
     const highlighted = cursorOverNode(currNode) && !cursorOverChildNode();
 
-    /* @TODO: This method could be way more specific, 
-     * but for now we should feel safe assuming that any value of type 'object'
-     * we encounter is in fact an ast node
-     */
+    useEffect(() => {
+        if (highlighted && nodeRef.current !== null) {
+            nodeRef.current.scrollIntoView();
+        }
+    }, [highlighted]);
+
     function isASTNode(val: unknown) {
         return typeof val === 'object';
     }
@@ -41,17 +47,14 @@ export default function ASTNode(props: Props) {
         return cursorPosition >= node.start && cursorPosition <= node.end;
     }
 
-    // @TODO: See if this can be done more efficiently, by passing down a function through
-    // child nodes
     function cursorOverChildNode() {
         for (const val of Object.values(currNode)) {
             if (isASTNode(val)) {
-                if (Array.isArray(val)) {
-                    if (val.some(v => isASTNode(v) && cursorOverNode(v))) {
-                        return true;
-                    }
-                }
 
+                if (Array.isArray(val)&& val.some(v => isASTNode(v) && cursorOverNode(v))) {
+                    return true;
+                }
+    
                 if (cursorOverNode(val)) {
                     return true;
                 }
@@ -61,60 +64,83 @@ export default function ASTNode(props: Props) {
         return false;
     }
 
-    function toggleExpanded() {
-        setExpanderState(!expanded ? 'expanded' : 'collapsedByUser');
-    }
 
     function onMouseEnter() {
         highlightCode(currNode.start, currNode.end);
     }
 
-
-    const styles = {
-        paddingLeft: '10px',
-        paddingRight: '10px',
-        marginBottom: '0px',
-        backgroundColor: highlighted ? '#f5f5d6': '',
-    };
+    const nodeClasses = useClasses({
+        base: [styles.node],
+        conditional: [{
+            condition: highlighted,
+            styles: [styles.highlighted]
+        }]
+    });
 
     return (
-        <div style={styles} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
+        <div 
+            className={nodeClasses}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+            ref={nodeRef}
+        >
             <Expander
                 title={currNode.type} 
                 expanded={expanded}
-                toggleExpanded={toggleExpanded}
+                toggleExpanded={() => {
+                    setExpanderState(!expanded ? 'expanded' : 'collapsedByUser')
+                }}
             >
-                {Object.entries(currNode).map(([key, value]) => {
-                    return (
-                        <div key={key}>
-                            <span style={{ color: colors.gold }}>{key}: </span>
-                            <span style={{ color: colors.seafoam }}>
-                            {
-                                isASTNode(value)
-                                    ? Array.isArray(value)
-                                        ? <>
-                                            [
-                                            {value.map(v => (
-                                                <ASTNode 
-                                                    {...props}
-                                                    node={v}
-                                                    onMouseLeave={onMouseEnter}
-                                                />
-                                            ))}
-                                            ]
-                                          </>
-                                        : <ASTNode 
-                                            {...props}
-                                            node={value}
-                                            onMouseLeave={onMouseEnter}
-                                        />
-                                    : value
-                            }
-                            </span>
-                        </div>
-                    );
-                })}
+                <RecurseThroughNodes
+                    node={currNode} 
+                    renderChildNode={(value) => {
+                        if (!isASTNode(value)) return value;
+
+                        return (
+                            <ConditionalEnhancer
+                                condition={Array.isArray(value)}
+                                enhancer={BaseComponent =>
+                                    <ArrayOfNodes>
+                                        {value.map((v: ast.Node) => 
+                                            <BaseComponent node={v} />)}
+                                    </ArrayOfNodes>
+                                }
+                            >
+                                <ASTNode 
+                                    {...props}
+                                    node={value}
+                                    onMouseLeave={onMouseEnter}
+                                />
+                            </ConditionalEnhancer>
+                        );
+                }}/>
             </Expander>
         </div>
+    );
+}
+
+function ArrayOfNodes({ children }: PropsWithChildren) {
+    return <>[{children}]</>
+}
+
+interface ASTNodeRecurseProps {
+    node: ast.Node;
+    renderChildNode(val: any): React.ReactElement;
+}
+
+function RecurseThroughNodes({ node, renderChildNode }: ASTNodeRecurseProps) {
+    return (
+        <>
+        {Object.entries(node).map(([key, value]) => {
+            return (
+                <div key={key}>
+                    <span style={{ color: colors.gold }}>{key}: </span>
+                    <span style={{ color: colors.seafoam }}>
+                        {renderChildNode(value)}
+                    </span>
+                </div>
+            );
+        })}
+        </>
     );
 }

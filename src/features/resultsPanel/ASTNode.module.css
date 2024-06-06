@@ -1,0 +1,9 @@
+.node {
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-bottom: 0px;
+
+    &.highlighted {
+        background-color: #f5f5d6;
+    }
+}
