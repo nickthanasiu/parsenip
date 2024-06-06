@@ -1,16 +1,17 @@
 import Editor from "@monaco-editor/react";
 import { Position } from "./interpreter/token";
-import { lex } from "./interpreter/lexer";
-import ResultsPanel from './features/resultsPanel/ResultsPanel';
 import { useEditor } from './features/textEditor/useEditor';
 import TokenCard from "./features/resultsPanel/TokenCard";
-import ParserPanel from "./features/resultsPanel/ParserPanel";
-import SplitScreen from './components/SplitScreen';
-import Panel from "./components/Panel";
+import ParserAST from "./features/resultsPanel/ParserAST";
 import Button from "./components/Button";
+import TabList from "./features/panels/TabList";
+import { Panel, type PanelProps } from "./features/panels/Panel";
+import { lex } from "./interpreter/lexer";
 import { useEval } from "./hooks/useEval";
-
-import styles from "./features/resultsPanel/ResultsPanel.module.css";
+import { useParser } from "./hooks/useParser";
+import resultsPanelStyles from "./features/resultsPanel/ResultsPanel.module.css";
+import SplitPanel from "./features/panels/SplitPanel";
+import ConditionalEnhancer from "./components/ConditionalEnhancer";
 import './App.css';
 
 export default function App() {
@@ -22,58 +23,96 @@ export default function App() {
     config: editorConfig,
   } = useEditor();
 
-  const tokens = lex(input); // @TODO is this being called unnecessarily??
   const [evalResult, setEvalResult] = useEval();
-
+  const [program, parserErrors] = useParser(input);
+  
+  const tokens = lex(input); // @TODO is this being called unnecessarily??
+  
   const cursorIsOverToken = ({ start, end }: Position, cursorPosition: number) => {
     return cursorPosition >= start && cursorPosition <= end;
   };
-
+  
   const resetCodeHighlight = () => {
     highlightCode(0, 0);
   };
 
-  
   return (
     <div className="app">
       <header>
         <h3>{document.title}</h3>
         <Button onClick={resetInput}>Reset</Button>
-        <Button 
+        <Button
           onClick={() => setEvalResult(input)}
           icon={<img src="src/assets/play-icon.png" style={{ marginRight: '5px'}}/>}
         >
           Run
         </Button>
       </header>
-      <SplitScreen>
-        <Panel>
-          <Editor className="editor" {...editorConfig} />
-        </Panel>
-        <ResultsPanel evalResult={evalResult}>
-          <div className={styles.tokenPanel} onMouseLeave={resetCodeHighlight}>
-            {tokens.map(t => (
-              <div onMouseEnter={() => highlightCode(t.position.start, t.position.end)}>
-                <TokenCard
-                  token={t}
-                  highlighted={cursorIsOverToken(t.position, cursorPosition)}
+      <SplitPanel renderPanels={([p1, p2]) => [
+        <Panel
+          expanded={p1.expanded}
+          toggleExpanded={p1.toggleExpanded}
+          tabs={[
+              <TabList.Item label="Code">
+                <Editor {...editorConfig} />
+              </TabList.Item>
+         ]}
+        />,
+        <ConditionalEnhancer<PanelProps>
+          condition={Boolean(evalResult)}
+          enhancer={(BaseComponent, baseComponentProps) =>
+            <SplitPanel
+              vertical
+              renderPanels={([p1, p2], splitPanelProps) => [
+                <BaseComponent
+                  {...baseComponentProps}
+                  expanded={p1.expanded}
+                  toggleExpanded={p1.toggleExpanded}
+                  vertical={splitPanelProps.vertical}
+                />,
+                <Panel
+                  expanded={p2.expanded}
+                  toggleExpanded={p2.toggleExpanded}
+                  vertical={splitPanelProps.vertical}
+                  tabs={[
+                    <TabList.Item label="Results">
+                      {evalResult}
+                    </TabList.Item>,
+                  ]}
                 />
-              </div>
-            ))}
-          </div>
-          <ParserPanel
-            input={input}
-            astNodeProps={{
-              cursorPosition,
-              highlightCode,
-              // Reset code highlighting when mouse leaves ParserPanel entirely
-              onMouseLeave: resetCodeHighlight
-            }}
+            ]}/>
+        }>
+          <Panel 
+            expanded={p2.expanded}
+            toggleExpanded={p2.toggleExpanded}
+            defaultActiveTabIdx={1}
+            tabs={[
+              <TabList.Item label="Tokens">
+                <div className={resultsPanelStyles.tokenPanel} onMouseLeave={resetCodeHighlight}>
+                  {tokens.map(t => (
+                    <div onMouseEnter={() => highlightCode(t.position.start, t.position.end)}>
+                      <TokenCard
+                        token={t}
+                        highlighted={cursorIsOverToken(t.position, cursorPosition)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </TabList.Item>,
+              <TabList.Item label="Parser">
+                <ParserAST errors={parserErrors}>
+                  <ParserAST.Node
+                    node={program}
+                    cursorPosition={cursorPosition}
+                    highlightCode={highlightCode}
+                    onMouseLeave={resetCodeHighlight}
+                  />
+                </ParserAST>
+              </TabList.Item>
+            ]}
           />
-        </ResultsPanel>
-      </SplitScreen>
+        </ConditionalEnhancer>
+      ]} />
     </div>
   );
 }
-
-

@@ -1,18 +1,19 @@
-#root {
-  margin: 0;
-  padding: 0;
-}
+
 
 .app {
   background-color: var(--light-gray);
-  height: 100vh;
+  height: 100%;
   padding: 10px;
+  
+  display: flex;
+  flex-direction: column;
 }
 
 .app header {
   padding-left: 20px;
   height: 35px;
   display: flex;
+  
   align-items: center;
 }
 

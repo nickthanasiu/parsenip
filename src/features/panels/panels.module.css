@@ -1,0 +1,144 @@
+.container {
+    height: 100%;
+    width: 100%;
+    display: none;
+    display: grid;
+    user-select: none;
+
+    --drag-indicator-width: 3px;
+    --drag-indicator-length: 25px;
+}
+
+.divider {
+    background-color: var(--light-gray);
+    position: relative;
+    padding: 0;
+}
+
+.dragIndicator {
+    background-color: var(--gray);
+    width: var(--drag-indicator-width);
+    height: var(--drag-indicator-length);
+    border-radius: 5px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+}
+
+.divider:hover .dragIndicator {
+    height: 100%;
+    cursor: col-resize;
+    background-color: var(--blue);
+}
+
+.panel {
+    border-radius: 5px;
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    padding: 5px;
+    display: flex;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background-color: var(--lighter-gray);
+}
+
+.body {
+    height: 100%;
+    background-color: #fff;
+    overflow: scroll;
+}
+
+.container.vertical .divider {
+    width: 100%;
+}
+
+.container.vertical .divider .dragIndicator {
+    height: var(--drag-indicator-width);
+    width: var(--drag-indicator-length);
+}
+
+.container.vertical .divider:hover .dragIndicator {
+    width: 100%;
+    background-color: var(--blue);
+    cursor: row-resize;
+}
+
+.tabs {
+    display: flex;
+    padding: 0 5px;
+}
+
+.tab {
+    cursor: pointer;
+    color: gray;
+    border-radius: 5px;
+    padding: 5px 0;
+
+    &.activeTab {
+        color: black;
+    }
+    
+    &:hover {
+        background-color: var(--light-gray);
+    }
+
+    .tabText {
+        line-height: normal;
+        padding: 0 10px;
+        font-size: 15px;
+        font-weight: 500;
+        border-left: 1px solid var(--light-gray);
+        border-right: 1px solid var(--light-gray);
+    }
+
+    &:first-child .tabText {
+        border-left: 0;
+    }
+
+    &:last-child .tabText {
+        border-right: 0;
+    }
+
+    & + & {
+        margin-left: -1px;
+    }
+}
+
+
+.btnsContainer {
+    display: none;
+    
+    button {
+        height: 28px;
+        width: 28px;
+        margin: 0 3px;
+        padding: 0;
+        position: relative;
+        
+        &:hover {
+            background-color: var(--light-gray);
+            border: 1px solid var(--light-gray);
+            border-radius: 5px;
+        }
+
+    }
+}
+
+.panel:hover .btnsContainer {
+    display: flex;
+    align-items: center;
+}
+
+
+
+
+

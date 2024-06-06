@@ -54,7 +54,7 @@ export function useEditor() {
   }
 
   const config: EditorProps = {
-    height: '100vh',
+    height: '100%',
     width: '100%',
     theme: 'vs-light',
     language: 'javascript',
@@ -94,7 +94,7 @@ function useEditorInput() {
   const starterCode = 
     `/*\n * Write code here and see how\n * the lexer and parser interpret it \n */\n\nconst x = 1;\nconst y = 2;\n\nfunction add(a, b){\n  return a + b;\n}\n\nconst sum = add(x, y);`;
   
-  const [input, setInput] = useState(loadState);
+  const [input, setInput] = useState(starterCode);
 
   function loadState() {
     return localStorage.getItem('code') ?? starterCode;

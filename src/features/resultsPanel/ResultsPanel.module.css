@@ -1,5 +1,4 @@
 .tokenPanel {
-    background-color: #fff;
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     row-gap: 10px;

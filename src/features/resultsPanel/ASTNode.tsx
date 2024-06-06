@@ -72,6 +72,7 @@ export default function ASTNode(props: Props) {
 
     const styles = {
         paddingLeft: '10px',
+        paddingRight: '10px',
         marginBottom: '0px',
         backgroundColor: highlighted ? '#f5f5d6': '',
     };
