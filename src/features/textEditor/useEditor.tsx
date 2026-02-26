@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { editor as monaco, Range, IPosition } from "monaco-editor";
 import { EditorProps } from "@monaco-editor/react";
   
@@ -27,7 +27,7 @@ export function useEditor() {
   });
 
   
-  function updateDecorations(start: number, end: number) {
+  const updateDecorations = useCallback((start: number, end: number) => {
     const textModel = editor?.getModel();
 
     if (textModel) {
@@ -43,7 +43,7 @@ export function useEditor() {
         }
       ]);
     }
-  }
+  }, [editor]);
   
   function handleEditorMount(editor: monaco.IStandaloneCodeEditor) {
     setEditor(editor);

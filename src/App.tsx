@@ -1,5 +1,5 @@
 import Editor from "@monaco-editor/react";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { lex } from "./interpreter/lexer";
 import SplitScreen from './components/SplitScreen';
 import ResultsPanel from './features/resultsPanel/ResultsPanel';
@@ -20,9 +20,7 @@ export default function App() {
 
   const tokens = useMemo(() => lex(input), [input]);
  
-  function resetCodeHighlight() {
-    highlightCode(0, 0);
-  }
+  const resetCodeHighlight = useCallback(() => highlightCode(0, 0), [highlightCode]);
 
 
   return (
