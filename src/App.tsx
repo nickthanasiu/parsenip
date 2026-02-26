@@ -41,7 +41,7 @@ export default function App() {
         <ResultsPanel>
           <div className={styles.tokenPanel} onMouseLeave={resetCodeHighlight}>
             {tokens.map(t => (
-              <div onMouseEnter={() => highlightCode(t.position.start, t.position.end)}>
+              <div key={t.position.start} onMouseEnter={() => highlightCode(t.position.start, t.position.end)}>
                 <TokenCard
                   token={t}
                   highlighted={cursorIsOverToken(t.position, cursorPosition)}
