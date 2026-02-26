@@ -6,7 +6,6 @@ import ResultsPanel from './features/resultsPanel/ResultsPanel';
 import { useEditor } from './features/textEditor/useEditor';
 import TokenCard from "./features/resultsPanel/TokenCard";
 import ParserPanel from "./features/resultsPanel/ParserPanel";
-import styles from "./features/resultsPanel/ResultsPanel.module.css";
 import './App.css';
 
 export default function App() {
@@ -32,7 +31,7 @@ export default function App() {
       <SplitScreen>
         <Editor {...editorConfig} />
         <ResultsPanel>
-          <div className={styles.tokenPanel} onMouseLeave={resetCodeHighlight}>
+          <div className="tokenPanel" onMouseLeave={resetCodeHighlight}>
             {tokens.map(t => (
               <div key={t.position.start} onMouseEnter={() => highlightCode(t.position.start, t.position.end)}>
                 <TokenCard
