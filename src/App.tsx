@@ -1,4 +1,5 @@
 import Editor from "@monaco-editor/react";
+import { useMemo } from "react";
 import { Position } from "./interpreter/token";
 import { lex } from "./interpreter/lexer";
 import SplitScreen from './components/SplitScreen';
@@ -18,7 +19,7 @@ export default function App() {
     config: editorConfig,
   } = useEditor();
 
-  const tokens = lex(input); // @TODO is this being called unnecessarily??
+  const tokens = useMemo(() => lex(input), [input]);
  
   const cursorIsOverToken = ({ start, end }: Position, cursorPosition: number) => {
     return cursorPosition >= start && cursorPosition <= end;
