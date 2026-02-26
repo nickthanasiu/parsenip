@@ -25,7 +25,7 @@ export default function App() {
   return (
     <div className="app">
       <header>
-        <h3>{document.title}</h3>
+        <h3>Parsenip</h3>
         <button onClick={resetInput}>New</button>
       </header>
       <SplitScreen>
