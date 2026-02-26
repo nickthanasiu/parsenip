@@ -1,6 +1,5 @@
 import Editor from "@monaco-editor/react";
 import { useMemo } from "react";
-import { Position } from "./interpreter/token";
 import { lex } from "./interpreter/lexer";
 import SplitScreen from './components/SplitScreen';
 import ResultsPanel from './features/resultsPanel/ResultsPanel';
@@ -21,10 +20,6 @@ export default function App() {
 
   const tokens = useMemo(() => lex(input), [input]);
  
-  const cursorIsOverToken = ({ start, end }: Position, cursorPosition: number) => {
-    return cursorPosition >= start && cursorPosition <= end;
-  };
-
   function resetCodeHighlight() {
     highlightCode(0, 0);
   }
@@ -44,7 +39,7 @@ export default function App() {
               <div key={t.position.start} onMouseEnter={() => highlightCode(t.position.start, t.position.end)}>
                 <TokenCard
                   token={t}
-                  highlighted={cursorIsOverToken(t.position, cursorPosition)}
+                  highlighted={cursorPosition >= t.position.start && cursorPosition <= t.position.end}
                 />
               </div>
             ))}
