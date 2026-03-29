@@ -35,20 +35,22 @@ export default function ResultsPanel({
     return (
         <div>
             <div className={styles.tabs}>
-                {tabs.map(t =>
-                    <div
-                        className={conditionalStyles({
-                            baseStyles: [styles.tab],
-                            conditionalStyles: [{
-                                condition: t.name === activeTab,
-                                styles: styles.activeTab
-                            }]
-                        })}
-                        onClick={() => setActiveTab(t.name)}
-                    >
-                        {t.name.charAt(0).toUpperCase() + t.name.slice(1)}
-                    </div>
-                )}
+                <div className={styles.tabGroup}>
+                    {tabs.map(t =>
+                        <div
+                            className={conditionalStyles({
+                                baseStyles: [styles.tab],
+                                conditionalStyles: [{
+                                    condition: t.name === activeTab,
+                                    styles: styles.activeTab
+                                }]
+                            })}
+                            onClick={() => setActiveTab(t.name)}
+                        >
+                            {t.name.charAt(0).toUpperCase() + t.name.slice(1)}
+                        </div>
+                    )}
+                </div>
             </div>
 
             <ActivePanel />

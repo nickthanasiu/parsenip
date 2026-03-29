@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { editor as monaco, Range, IPosition } from "monaco-editor";
 import { EditorProps } from "@monaco-editor/react";
   
@@ -6,7 +6,8 @@ export function useEditor() {
   const [editor, setEditor] = useState<monaco.IStandaloneCodeEditor>();
   const [cursorPosition, setCursorPosition] = useState(0);
   const decorationsCollectionRef = useRef<monaco.IEditorDecorationsCollection>();
-  const  { input, setInput, resetInput } = useEditorInput();
+  const { input, setInput, resetInput } = useEditorInput();
+  const { settingsJson, saveSettings, resetSettings, parsedSettings } = useEditorSettings();
   
   useEffect(() => {
     decorationsCollectionRef.current = editor?.createDecorationsCollection([
@@ -27,7 +28,7 @@ export function useEditor() {
   });
 
   
-  function updateDecorations(start: number, end: number) {
+  const updateDecorations = useCallback((start: number, end: number) => {
     const textModel = editor?.getModel();
 
     if (textModel) {
@@ -43,7 +44,7 @@ export function useEditor() {
         }
       ]);
     }
-  }
+  }, [editor]);
   
   function handleEditorMount(editor: monaco.IStandaloneCodeEditor) {
     setEditor(editor);
@@ -56,7 +57,7 @@ export function useEditor() {
   const config: EditorProps = {
     height: '100vh',
     width: '100%',
-    theme: 'vs-light',
+    theme: 'vs-dark',
     language: 'javascript',
     value: input,
     options: {
@@ -67,26 +68,55 @@ export function useEditor() {
       overviewRulerLanes: 0,
       scrollbar: {
         //@TODO: For some reason, this setting breaks code highlighting..investigate why
-        //vertical: 'hidden' 
-      }
+        //vertical: 'hidden'
+      },
+      ...(parsedSettings ?? {}),
     },
     onMount: handleEditorMount,
     onChange: handleChange,
-};
+  };
 
   return {
     handleEditorMount,
     handleChange,
 
     cursorPosition,
-    
+
     input,
     resetInput,
+
+    settingsJson,
+    saveSettings,
+    resetSettings,
 
     highlightCode: updateDecorations,
     config,
   };
 
+}
+
+
+function useEditorSettings() {
+  const [settingsJson, setSettingsJson] = useState(
+    () => localStorage.getItem('editorSettings') ?? '{}'
+  );
+
+  const parsedSettings = useMemo(() => {
+    try { return JSON.parse(settingsJson); }
+    catch { return null; }
+  }, [settingsJson]);
+
+  function saveSettings(json: string) {
+    localStorage.setItem('editorSettings', json);
+    setSettingsJson(json);
+  }
+
+  function resetSettings() {
+    localStorage.removeItem('editorSettings');
+    setSettingsJson('{}');
+  }
+
+  return { settingsJson, saveSettings, resetSettings, parsedSettings };
 }
 
 

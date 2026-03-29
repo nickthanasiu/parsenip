@@ -8,17 +8,51 @@
 }
 
 .app header {
-  padding-left: 20px;
-  height: 35px;
-  background-color: lightgrey;
+  padding: 0 16px;
+  height: 40px;
+  background-color: var(--base02);
+  border-bottom: 1px solid var(--base01);
   display: flex;
   align-items: center;
+  gap: 16px;
+}
+
+.app header h3 {
+  margin: 0;
+  color: var(--base1);
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
 }
 
 .app header button {
-  margin-left: 50px;
+  padding: 3px 12px;
+  background: transparent;
+  border: 1px solid var(--base01);
+  border-radius: 4px;
+  color: var(--base0);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.app header button:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.app header .settingsButton {
+  margin-left: auto;
 }
 
 .highlighted-code {
-  background-color: #f5f5d6;
+  background-color: rgba(181, 137, 0, 0.3);
+}
+
+.tokenPanel {
+  background-color: var(--base03);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px;
+  padding: 15px;
+  height: min-content;
 }

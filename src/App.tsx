@@ -1,12 +1,12 @@
 import Editor from "@monaco-editor/react";
-import { Position } from "./interpreter/token";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { lex } from "./interpreter/lexer";
 import SplitScreen from './components/SplitScreen';
 import ResultsPanel from './features/resultsPanel/ResultsPanel';
 import { useEditor } from './features/textEditor/useEditor';
 import TokenCard from "./features/resultsPanel/TokenCard";
 import ParserPanel from "./features/resultsPanel/ParserPanel";
-import styles from "./features/resultsPanel/ResultsPanel.module.css";
+import SettingsPanel from './features/settings/SettingsPanel';
 import './App.css';
 
 export default function App() {
@@ -14,36 +14,47 @@ export default function App() {
     cursorPosition,
     input,
     resetInput,
+    settingsJson,
+    saveSettings,
+    resetSettings,
     highlightCode,
     config: editorConfig,
   } = useEditor();
 
-  const tokens = lex(input); // @TODO is this being called unnecessarily??
- 
-  const cursorIsOverToken = ({ start, end }: Position, cursorPosition: number) => {
-    return cursorPosition >= start && cursorPosition <= end;
-  };
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
-  function resetCodeHighlight() {
-    highlightCode(0, 0);
-  }
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === ',' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setSettingsOpen(open => !open);
+      }
+    }
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
+
+  const tokens = useMemo(() => lex(input), [input]);
+ 
+  const resetCodeHighlight = useCallback(() => highlightCode(0, 0), [highlightCode]);
 
 
   return (
     <div className="app">
       <header>
-        <h3>{document.title}</h3>
+        <h3>Parsenip</h3>
         <button onClick={resetInput}>New</button>
+        <button className="settingsButton" onClick={() => setSettingsOpen(true)}>Settings</button>
       </header>
       <SplitScreen>
         <Editor {...editorConfig} />
         <ResultsPanel>
-          <div className={styles.tokenPanel} onMouseLeave={resetCodeHighlight}>
+          <div className="tokenPanel" onMouseLeave={resetCodeHighlight}>
             {tokens.map(t => (
-              <div onMouseEnter={() => highlightCode(t.position.start, t.position.end)}>
+              <div key={t.position.start} onMouseEnter={() => highlightCode(t.position.start, t.position.end)}>
                 <TokenCard
                   token={t}
-                  highlighted={cursorIsOverToken(t.position, cursorPosition)}
+                  highlighted={cursorPosition >= t.position.start && cursorPosition <= t.position.end}
                 />
               </div>
             ))}
@@ -59,6 +70,14 @@ export default function App() {
           />
         </ResultsPanel>
       </SplitScreen>
+      {settingsOpen && (
+        <SettingsPanel
+          settingsJson={settingsJson}
+          onSettingsChange={saveSettings}
+          onReset={resetSettings}
+          onClose={() => setSettingsOpen(false)}
+        />
+      )}
     </div>
   );
 }
