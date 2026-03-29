@@ -9,49 +9,41 @@ interface Props {
 export default function TokenCard({ token, highlighted }: Props) {
     const { type, literal } = token;
 
-    const tokenColor =
-        type === TokenType.ILLEGAL
-        ? colors.red
-        : colors.blue
-    ;
-
     const isIllegal = type === TokenType.ILLEGAL;
+    const chipColor = isIllegal ? colors.red : highlighted ? colors.gold : colors.blue;
 
-    const styles = {
-        border: '1px solid',
+    const cardStyle = {
+        backgroundColor: highlighted ? 'rgba(181, 137, 0, 0.15)' : 'var(--base02)',
+        border: `1px solid ${highlighted ? 'var(--yellow)' : 'var(--base01)'}`,
+        borderRadius: '4px',
+        padding: '8px 10px',
         display: 'flex',
-        flexDirection: 'column' as 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: 'auto',
-        borderColor: tokenColor,
-        color: tokenColor,
-        backgroundColor: highlighted ? '#f5f5d6' : '',
+        flexDirection: 'column' as const,
+        gap: '6px',
     };
 
-    const keyColor = isIllegal ? colors.red : colors.gold;
-    const valueColor = isIllegal ? colors.red: colors.seafoam;
+    const chipStyle = {
+        display: 'inline-block',
+        backgroundColor: chipColor,
+        color: '#fff',
+        fontSize: '0.68rem',
+        fontWeight: 700,
+        letterSpacing: '0.05em',
+        padding: '2px 6px',
+        borderRadius: '3px',
+        alignSelf: 'flex-start' as const,
+    };
+
+    const literalStyle = {
+        fontFamily: 'monospace',
+        fontSize: '0.85rem',
+        color: 'var(--base1)',
+    };
 
     return (
-        <div style={styles}>
-            <div>
-                <span style={{ color: keyColor }}>type: </span>
-                <span style={{ color: valueColor }}>{type}</span>
-            </div>
-            <div>
-                <span style={{ color: keyColor }}>value: </span>
-                <span style={{ color: valueColor }}>{literal}</span>
-            </div>
-
-            {/*<div>
-                <span style={{ color: keyColor }}>start: </span>
-                <span style={{ color: valueColor }}>{position.start}</span>
-            </div>
-
-            <div>
-                <span style={{ color: keyColor }}>end: </span>
-                <span style={{ color: valueColor }}>{position.end}</span>
-            </div>*/}
+        <div style={cardStyle}>
+            <span style={chipStyle}>{type}</span>
+            <span style={literalStyle}>{literal}</span>
         </div>
     );
 }

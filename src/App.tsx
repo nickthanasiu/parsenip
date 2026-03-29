@@ -1,11 +1,12 @@
 import Editor from "@monaco-editor/react";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { lex } from "./interpreter/lexer";
 import SplitScreen from './components/SplitScreen';
 import ResultsPanel from './features/resultsPanel/ResultsPanel';
 import { useEditor } from './features/textEditor/useEditor';
 import TokenCard from "./features/resultsPanel/TokenCard";
 import ParserPanel from "./features/resultsPanel/ParserPanel";
+import SettingsPanel from './features/settings/SettingsPanel';
 import './App.css';
 
 export default function App() {
@@ -13,9 +14,25 @@ export default function App() {
     cursorPosition,
     input,
     resetInput,
+    settingsJson,
+    saveSettings,
+    resetSettings,
     highlightCode,
     config: editorConfig,
   } = useEditor();
+
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === ',' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setSettingsOpen(open => !open);
+      }
+    }
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
 
   const tokens = useMemo(() => lex(input), [input]);
  
@@ -27,6 +44,7 @@ export default function App() {
       <header>
         <h3>Parsenip</h3>
         <button onClick={resetInput}>New</button>
+        <button className="settingsButton" onClick={() => setSettingsOpen(true)}>Settings</button>
       </header>
       <SplitScreen>
         <Editor {...editorConfig} />
@@ -52,6 +70,14 @@ export default function App() {
           />
         </ResultsPanel>
       </SplitScreen>
+      {settingsOpen && (
+        <SettingsPanel
+          settingsJson={settingsJson}
+          onSettingsChange={saveSettings}
+          onReset={resetSettings}
+          onClose={() => setSettingsOpen(false)}
+        />
+      )}
     </div>
   );
 }

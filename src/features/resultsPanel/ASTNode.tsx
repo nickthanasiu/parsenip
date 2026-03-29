@@ -70,24 +70,29 @@ export default function ASTNode(props: Props) {
     }
 
 
+    const isRoot = currNode.type === 'program';
+
     const styles = {
         paddingLeft: '10px',
-        marginBottom: '0px',
-        backgroundColor: highlighted ? '#f5f5d6': '',
+        borderLeft: isRoot ? 'none' : '1px solid var(--base01)',
+        marginLeft: isRoot ? '0' : '4px',
+        marginTop: '4px',
+        backgroundColor: highlighted ? 'rgba(181, 137, 0, 0.15)' : '',
     };
 
     return (
         <div style={styles} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
             <Expander
-                title={currNode.type} 
+                title={currNode.type}
                 expanded={expanded}
+                highlighted={highlighted}
                 toggleExpanded={toggleExpanded}
             >
                 {Object.entries(currNode).map(([key, value]) => {
                     return (
-                        <div key={key}>
-                            <span style={{ color: colors.gold }}>{key}: </span>
-                            <span style={{ color: colors.seafoam }}>
+                        <div key={key} style={{ marginTop: '4px' }}>
+                            <span style={{ color: colors.gold, fontSize: '0.8rem' }}>{key}: </span>
+                            <span style={{ color: colors.seafoam, fontFamily: 'monospace', fontSize: '0.82rem' }}>
                             {
                                 isASTNode(value)
                                     ? Array.isArray(value)
